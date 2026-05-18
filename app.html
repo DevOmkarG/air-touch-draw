@@ -1,0 +1,1014 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+<title>✦ AIR & TOUCH DRAW</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=Space+Mono:wght@400;700&display=swap');
+
+  :root {
+    --neon-cyan: #00fff7;
+    --neon-pink: #ff00c8;
+    --neon-green: #39ff14;
+    --dark: #050508;
+    --panel-bg: rgba(10, 10, 20, 0.85);
+    --border: rgba(0, 255, 247, 0.15);
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; touch-action: none; }
+
+  body {
+    background: var(--dark);
+    color: #fff;
+    font-family: 'Space Mono', monospace;
+    height: 100vh;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+  }
+
+  /* Header */
+  header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 10px 20px;
+    border-bottom: 1px solid var(--border);
+    background: var(--panel-bg);
+    backdrop-filter: blur(10px);
+    z-index: 10;
+    flex-shrink: 0;
+  }
+
+  .logo {
+    font-family: 'Orbitron', sans-serif;
+    font-weight: 900;
+    font-size: 1.1rem;
+    letter-spacing: 0.2em;
+    background: linear-gradient(90deg, var(--neon-cyan), var(--neon-pink));
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    text-shadow: none;
+  }
+
+  .status-badge {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 0.65rem;
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    color: rgba(255,255,255,0.5);
+  }
+
+  .status-dot {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background: #333;
+    transition: background 0.3s, box-shadow 0.3s;
+  }
+  .status-dot.active { background: var(--neon-green); box-shadow: 0 0 8px var(--neon-green); }
+  .status-dot.drawing { background: var(--neon-cyan); box-shadow: 0 0 8px var(--neon-cyan); animation: pulse 0.8s infinite; }
+  .status-dot.erasing { background: var(--neon-pink); box-shadow: 0 0 8px var(--neon-pink); }
+  .status-dot.paused { background: #ff9500; box-shadow: 0 0 8px #ff9500; }
+
+  @keyframes pulse { 0%,100%{opacity:1} 50%{opacity:0.4} }
+
+  /* Main layout */
+  .main {
+    display: flex;
+    flex: 1;
+    min-height: 0;
+  }
+
+  /* Canvas area */
+  .canvas-area {
+    position: relative;
+    flex: 1;
+    background: #000;
+    overflow: hidden;
+  }
+
+  #drawCanvas {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+  }
+
+  #webcamCanvas {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    opacity: 0;
+    pointer-events: none;
+  }
+
+  /* Finger cursor */
+  #cursor {
+    position: absolute;
+    width: 20px;
+    height: 20px;
+    border-radius: 50%;
+    pointer-events: none;
+    transform: translate(-50%, -50%);
+    z-index: 5;
+    transition: transform 0.01s;
+    display: none;
+  }
+
+  /* HUD Overlays */
+  .hud-container {
+    position: absolute;
+    top: 16px;
+    left: 50%;
+    transform: translateX(-50%);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 8px;
+    z-index: 10;
+    pointer-events: none;
+  }
+
+  .gesture-overlay {
+    background: rgba(0,0,0,0.7);
+    border: 1px solid var(--border);
+    border-radius: 30px;
+    padding: 8px 20px;
+    font-size: 0.7rem;
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    backdrop-filter: blur(8px);
+    white-space: nowrap;
+  }
+
+  .gesture-overlay span { color: var(--neon-cyan); }
+
+  .debug-overlay {
+    background: rgba(5, 5, 10, 0.8);
+    border: 1px solid rgba(255, 255, 255, 0.05);
+    border-radius: 6px;
+    padding: 4px 10px;
+    font-size: 0.55rem;
+    letter-spacing: 0.1em;
+    color: rgba(255,255,255,0.4);
+    font-family: 'Space Mono', monospace;
+    white-space: nowrap;
+  }
+  .debug-overlay span { color: var(--neon-green); }
+
+  /* Loading screen */
+  #loadingScreen {
+    position: absolute;
+    inset: 0;
+    background: var(--dark);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 20px;
+    z-index: 20;
+  }
+
+  .loading-logo {
+    font-family: 'Orbitron', sans-serif;
+    font-weight: 900;
+    font-size: 2.5rem;
+    letter-spacing: 0.3em;
+    background: linear-gradient(90deg, var(--neon-cyan), var(--neon-pink), var(--neon-cyan));
+    background-size: 200%;
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    animation: shimmer 2s linear infinite;
+  }
+
+  @keyframes shimmer { 0%{background-position:0%} 100%{background-position:200%} }
+
+  .loading-bar-wrap {
+    width: 240px;
+    height: 3px;
+    background: rgba(255,255,255,0.1);
+    border-radius: 2px;
+    overflow: hidden;
+  }
+
+  .loading-bar {
+    height: 100%;
+    background: linear-gradient(90deg, var(--neon-cyan), var(--neon-pink));
+    width: 0%;
+    transition: width 0.4s;
+    box-shadow: 0 0 10px var(--neon-cyan);
+  }
+
+  .loading-text {
+    font-size: 0.65rem;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    color: rgba(255,255,255,0.4);
+  }
+
+  /* Side panel */
+  .panel {
+    width: 220px;
+    flex-shrink: 0;
+    background: var(--panel-bg);
+    border-left: 1px solid var(--border);
+    backdrop-filter: blur(10px);
+    display: flex;
+    flex-direction: column;
+    gap: 0;
+    overflow-y: auto;
+    scrollbar-width: none;
+  }
+  .panel::-webkit-scrollbar { display: none; }
+
+  .panel-section {
+    padding: 16px;
+    border-bottom: 1px solid var(--border);
+  }
+
+  .panel-label {
+    font-size: 0.6rem;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    color: rgba(255,255,255,0.3);
+    margin-bottom: 12px;
+  }
+
+  /* Color picker */
+  .color-swatches {
+    display: grid;
+    grid-template-columns: repeat(5, 1fr);
+    gap: 6px;
+    margin-bottom: 10px;
+  }
+
+  .swatch {
+    aspect-ratio: 1;
+    border-radius: 50%;
+    cursor: pointer;
+    border: 2px solid transparent;
+    transition: transform 0.15s, border-color 0.15s, box-shadow 0.15s;
+    position: relative;
+  }
+
+  .swatch:hover { transform: scale(1.15); }
+  .swatch.active {
+    border-color: rgba(255,255,255,0.8);
+    box-shadow: 0 0 12px currentColor;
+    transform: scale(1.1);
+  }
+
+  .custom-color-wrap {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-top: 8px;
+  }
+
+  .custom-color-wrap label {
+    font-size: 0.6rem;
+    letter-spacing: 0.1em;
+    color: rgba(255,255,255,0.4);
+    text-transform: uppercase;
+  }
+
+  #colorPicker {
+    width: 32px;
+    height: 24px;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    background: none;
+    padding: 0;
+  }
+
+  /* Sliders */
+  .slider-row {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 8px;
+  }
+
+  .slider-row label {
+    font-size: 0.6rem;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: rgba(255,255,255,0.35);
+    width: 60px;
+    flex-shrink: 0;
+  }
+
+  .slider-val {
+    font-size: 0.65rem;
+    color: var(--neon-cyan);
+    width: 28px;
+    text-align: right;
+    flex-shrink: 0;
+  }
+
+  input[type=range] {
+    -webkit-appearance: none;
+    flex: 1;
+    height: 3px;
+    background: rgba(255,255,255,0.1);
+    border-radius: 2px;
+    outline: none;
+  }
+  input[type=range]::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    width: 14px;
+    height: 14px;
+    border-radius: 50%;
+    background: var(--neon-cyan);
+    box-shadow: 0 0 8px var(--neon-cyan);
+    cursor: pointer;
+    transition: box-shadow 0.2s;
+  }
+  input[type=range]::-webkit-slider-thumb:hover {
+    box-shadow: 0 0 14px var(--neon-cyan), 0 0 24px var(--neon-cyan);
+  }
+
+  /* Gesture guide */
+  .gesture-guide {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+  }
+
+  .gesture-item {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 8px 10px;
+    background: rgba(255,255,255,0.03);
+    border-radius: 8px;
+    border: 1px solid rgba(255,255,255,0.05);
+    transition: border-color 0.3s, background 0.3s;
+  }
+
+  .gesture-item.active-gesture {
+    border-color: var(--neon-cyan);
+    background: rgba(0,255,247,0.05);
+  }
+
+  .gesture-icon {
+    font-size: 1.3rem;
+    width: 28px;
+    text-align: center;
+  }
+
+  .gesture-desc {
+    display: flex;
+    flex-direction: column;
+    gap: 1px;
+  }
+
+  .gesture-name {
+    font-size: 0.6rem;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: rgba(255,255,255,0.7);
+  }
+
+  .gesture-action {
+    font-size: 0.55rem;
+    color: rgba(255,255,255,0.3);
+  }
+
+  /* Buttons */
+  .btn-row {
+    display: flex;
+    gap: 8px;
+  }
+
+  .btn {
+    flex: 1;
+    padding: 8px 0;
+    border: 1px solid var(--border);
+    background: rgba(255,255,255,0.04);
+    color: rgba(255,255,255,0.6);
+    font-family: 'Space Mono', monospace;
+    font-size: 0.6rem;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    border-radius: 6px;
+    cursor: pointer;
+    transition: background 0.2s, color 0.2s, border-color 0.2s, box-shadow 0.2s;
+  }
+  .btn:hover {
+    background: rgba(0,255,247,0.08);
+    border-color: var(--neon-cyan);
+    color: var(--neon-cyan);
+    box-shadow: 0 0 10px rgba(0,255,247,0.1);
+  }
+  .btn.danger:hover {
+    background: rgba(255,0,200,0.08);
+    border-color: var(--neon-pink);
+    color: var(--neon-pink);
+    box-shadow: 0 0 10px rgba(255,0,200,0.1);
+  }
+
+  /* Webcam mini preview */
+  .preview-wrap {
+    position: relative;
+    width: 100%;
+    aspect-ratio: 4/3;
+    background: #000;
+    border-radius: 8px;
+    overflow: hidden;
+    border: 1px solid var(--border);
+  }
+
+  #previewVideo {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    transform: scaleX(-1);
+    display: block;
+  }
+
+  .preview-overlay {
+    position: absolute;
+    inset: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 0.6rem;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: rgba(255,255,255,0.3);
+  }
+
+  /* Responsive layout tweaks for smaller devices */
+  @media(max-width: 768px) {
+    body { height: auto; overflow: auto; }
+    .main { flex-direction: column; height: auto; }
+    .canvas-area { width: 100%; height: 60vh; min-height: 400px; }
+    .panel { width: 100%; border-left: none; border-top: 1px solid var(--border); }
+    .preview-wrap { display: none; }
+    .panel-section:first-child { display: none; } /* Hide camera preview on mobile setup */
+  }
+
+  /* Glow effect */
+  .glow-overlay {
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+    background:
+      radial-gradient(ellipse 60% 40% at 20% 80%, rgba(0,255,247,0.03) 0%, transparent 70%),
+      radial-gradient(ellipse 40% 60% at 80% 20%, rgba(255,0,200,0.03) 0%, transparent 70%);
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="logo">✦ AIR DRAW</div>
+  <div class="status-badge">
+    <div class="status-dot" id="statusDot"></div>
+    <span id="statusText">INITIALIZING</span>
+  </div>
+</header>
+
+<div class="main">
+  <div class="canvas-area">
+    <canvas id="drawCanvas"></canvas>
+    <canvas id="webcamCanvas"></canvas>
+    <div id="cursor"></div>
+    
+    <div class="hud-container">
+      <div class="debug-overlay" id="debugReadout">Mode: Detecting Device...</div>
+      <div class="gesture-overlay">Gesture/Input: <span id="gestureLabel">—</span></div>
+    </div>
+    
+    <div class="glow-overlay"></div>
+
+    <div id="loadingScreen">
+      <div class="loading-logo">AIR DRAW</div>
+      <div class="loading-bar-wrap"><div class="loading-bar" id="loadingBar"></div></div>
+      <div class="loading-text" id="loadingMsg">Initializing Canvas App…</div>
+    </div>
+  </div>
+
+  <div class="panel">
+    <div class="panel-section">
+      <div class="panel-label">Camera</div>
+      <div class="preview-wrap">
+        <video id="previewVideo" autoplay muted playsinline></video>
+        <div class="preview-overlay" id="previewMsg">Starting…</div>
+      </div>
+    </div>
+
+    <div class="panel-section">
+      <div class="panel-label">Color</div>
+      <div class="color-swatches" id="swatches"></div>
+      <div class="custom-color-wrap">
+        <label>Custom</label>
+        <input type="color" id="colorPicker" value="#00fff7">
+      </div>
+    </div>
+
+    <div class="panel-section">
+      <div class="panel-label">Brush</div>
+      <div class="slider-row">
+        <label>Size</label>
+        <input type="range" id="brushSize" min="2" max="40" value="8">
+        <div class="slider-val" id="brushSizeVal">8</div>
+      </div>
+      <div class="slider-row">
+        <label>Glow</label>
+        <input type="range" id="glowSize" min="0" max="60" value="20">
+        <div class="slider-val" id="glowSizeVal">20</div>
+      </div>
+      <div class="slider-row">
+        <label>Fade</label>
+        <input type="range" id="fadeRate" min="0" max="20" value="0">
+        <div class="slider-val" id="fadeRateVal">0</div>
+      </div>
+    </div>
+
+    <div class="panel-section">
+      <div class="panel-label">Controls Guide</div>
+      <div class="gesture-guide">
+        <div class="gesture-item" id="g-draw">
+          <div class="gesture-icon">☝️</div>
+          <div class="gesture-desc">
+            <div class="gesture-name">Draw</div>
+            <div class="gesture-action">Index finger UP / Touch & Drag</div>
+          </div>
+        </div>
+        <div class="gesture-item" id="g-erase">
+          <div class="gesture-icon">🖐️</div>
+          <div class="gesture-desc">
+            <div class="gesture-name">Erase Mode</div>
+            <div class="gesture-action">Open palm (Webcam only)</div>
+          </div>
+        </div>
+        <div class="gesture-item" id="g-pause">
+          <div class="gesture-icon">✊</div>
+          <div class="gesture-desc">
+            <div class="gesture-name">Pause</div>
+            <div class="gesture-action">Closed fist (Webcam only)</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="panel-section">
+      <div class="panel-label">Actions</div>
+      <div class="btn-row">
+        <button class="btn" onclick="saveCanvas()">Save</button>
+        <button class="btn danger" onclick="clearCanvas()">Clear</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/@mediapipe/camera_utils/camera_utils.js" crossorigin="anonymous"></script>
+<script src="https://cdn.jsdelivr.net/npm/@mediapipe/control_utils/control_utils.js" crossorigin="anonymous"></script>
+<script src="https://cdn.jsdelivr.net/npm/@mediapipe/hands/hands.js" crossorigin="anonymous"></script>
+
+<script>
+// ─── State ───────────────────────────────────────────────────────────────────
+const state = {
+  color: '#00fff7',
+  brushSize: 8,
+  glowSize: 20,
+  fadeRate: 0,
+  gesture: 'none', 
+  lastX: null,
+  lastY: null,
+  isDrawing: false,
+  isTouchActive: false, // Flag to identify if user is using mobile touch screen
+};
+
+// ─── Canvas setup ────────────────────────────────────────────────────────────
+const drawCanvas = document.getElementById('drawCanvas');
+const ctx = drawCanvas.getContext('2d');
+const webcamCanvas = document.getElementById('webcamCanvas');
+const wctx = webcamCanvas.getContext('2d');
+
+function resizeCanvases() {
+  const area = drawCanvas.parentElement;
+  const w = area.clientWidth, h = area.clientHeight;
+  
+  // Create safe fallback layout dimensions on active canvas content updates
+  const tempCanvas = document.createElement('canvas');
+  tempCanvas.width = drawCanvas.width; tempCanvas.height = drawCanvas.height;
+  const tCtx = tempCanvas.getContext('2d');
+  if(drawCanvas.width > 0 && drawCanvas.height > 0) {
+    tCtx.drawImage(drawCanvas, 0, 0);
+  }
+
+  drawCanvas.width = w; drawCanvas.height = h;
+  webcamCanvas.width = w; webcamCanvas.height = h;
+  
+  ctx.drawImage(tempCanvas, 0, 0);
+}
+resizeCanvases();
+window.addEventListener('resize', () => setTimeout(resizeCanvases, 100));
+
+// ─── Colors Palette Generator ────────────────────────────────────────────────
+const PALETTE = [
+  '#00fff7','#ff00c8','#39ff14','#ff6600','#ffffff',
+  '#ffd700','#7b2fff','#ff4466','#00b4ff','#ff99cc'
+];
+
+const swatchesEl = document.getElementById('swatches');
+PALETTE.forEach((c, i) => {
+  const s = document.createElement('div');
+  s.className = 'swatch' + (i === 0 ? ' active' : '');
+  s.style.background = c;
+  s.style.boxShadow = `0 0 6px ${c}`;
+  s.title = c;
+  s.onclick = () => setColor(c, s);
+  swatchesEl.appendChild(s);
+});
+
+function setColor(c, el) {
+  state.color = c;
+  document.getElementById('colorPicker').value = c;
+  document.querySelectorAll('.swatch').forEach(s => s.classList.remove('active'));
+  if (el) el.classList.add('active');
+  updateCursor();
+}
+
+document.getElementById('colorPicker').addEventListener('input', e => {
+  setColor(e.target.value, null);
+  document.querySelectorAll('.swatch').forEach(s => s.classList.remove('active'));
+});
+
+// ─── Sliders Binder ──────────────────────────────────────────────────────────
+function bindSlider(id, valId, key) {
+  const el = document.getElementById(id);
+  const valEl = document.getElementById(valId);
+  el.addEventListener('input', () => {
+    state[key] = parseInt(el.value);
+    valEl.textContent = el.value;
+    if (key === 'brushSize') updateCursor();
+  });
+}
+bindSlider('brushSize', 'brushSizeVal', 'brushSize');
+bindSlider('glowSize', 'glowSizeVal', 'glowSize');
+bindSlider('fadeRate', 'fadeRateVal', 'fadeRate');
+
+// ─── Floating Particle Cursor ────────────────────────────────────────────────
+const cursor = document.getElementById('cursor');
+function updateCursor() {
+  const s = state.brushSize * 2;
+  cursor.style.width = s + 'px';
+  cursor.style.height = s + 'px';
+  cursor.style.background = state.color + '44';
+  cursor.style.border = `2px solid ${state.color}`;
+  cursor.style.boxShadow = `0 0 ${state.glowSize}px ${state.color}, 0 0 ${state.glowSize * 2}px ${state.color}40`;
+}
+updateCursor();
+
+// ─── Rendering Core Engine ───────────────────────────────────────────────────
+function drawSegment(x1, y1, x2, y2, color, size, glow) {
+  ctx.save();
+  ctx.lineCap = 'round';
+  ctx.lineJoin = 'round';
+
+  if (glow > 0) {
+    ctx.beginPath();
+    ctx.moveTo(x1, y1);
+    ctx.lineTo(x2, y2);
+    ctx.strokeStyle = color + '33';
+    ctx.lineWidth = size + glow * 2;
+    ctx.filter = `blur(${glow * 0.6}px)`;
+    ctx.stroke();
+
+    ctx.beginPath();
+    ctx.moveTo(x1, y1);
+    ctx.lineTo(x2, y2);
+    ctx.strokeStyle = color + '66';
+    ctx.lineWidth = size + glow;
+    ctx.filter = `blur(${glow * 0.3}px)`;
+    ctx.stroke();
+  }
+
+  ctx.beginPath();
+  ctx.moveTo(x1, y1);
+  ctx.lineTo(x2, y2);
+  ctx.strokeStyle = color;
+  ctx.lineWidth = size;
+  ctx.filter = 'none';
+  ctx.shadowColor = color;
+  ctx.shadowBlur = glow;
+  ctx.stroke();
+
+  ctx.beginPath();
+  ctx.moveTo(x1, y1);
+  ctx.lineTo(x2, y2);
+  ctx.strokeStyle = '#ffffff99';
+  ctx.lineWidth = Math.max(1, size * 0.3);
+  ctx.shadowBlur = 0;
+  ctx.stroke();
+
+  ctx.restore();
+}
+
+// ─── Fade loop Engine ────────────────────────────────────────────────────────
+let lastFadeTime = 0;
+function fadeLoop(ts) {
+  if (state.fadeRate > 0 && ts - lastFadeTime > 40) {
+    ctx.save();
+    ctx.globalCompositeOperation = 'destination-out';
+    ctx.fillStyle = `rgba(0,0,0,${state.fadeRate * 0.003})`;
+    ctx.fillRect(0, 0, drawCanvas.width, drawCanvas.height);
+    ctx.restore();
+    lastFadeTime = ts;
+  }
+  requestAnimationFrame(fadeLoop);
+}
+requestAnimationFrame(fadeLoop);
+
+// ─── Mobile Touch Control Matrix ─────────────────────────────────────────────
+function getTouchPos(e) {
+  const rect = drawCanvas.getBoundingClientRect();
+  const touch = e.touches[0] || e.changedTouches[0];
+  return {
+    x: touch.clientX - rect.left,
+    y: touch.clientY - rect.top
+  };
+}
+
+drawCanvas.addEventListener('touchstart', (e) => {
+  e.preventDefault();
+  state.isTouchActive = true;
+  const pos = getTouchPos(e);
+  state.lastX = pos.x;
+  state.lastY = pos.y;
+  
+  cursor.style.display = 'block';
+  cursor.style.left = pos.x + 'px';
+  cursor.style.top = pos.y + 'px';
+  updateCursor();
+  
+  document.getElementById('debugReadout').textContent = "Mode: Active Mobile Touch";
+  updateGestureUI('draw');
+});
+
+drawCanvas.addEventListener('touchmove', (e) => {
+  e.preventDefault();
+  if (!state.lastX) return;
+  const pos = getTouchPos(e);
+  
+  cursor.style.left = pos.x + 'px';
+  cursor.style.top = pos.y + 'px';
+  
+  drawSegment(state.lastX, state.lastY, pos.x, pos.y, state.color, state.brushSize, state.glowSize);
+  state.lastX = pos.x;
+  state.lastY = pos.y;
+});
+
+drawCanvas.addEventListener('touchend', (e) => {
+  e.preventDefault();
+  state.lastX = null;
+  state.lastY = null;
+  cursor.style.display = 'none';
+  updateGestureUI('none');
+});
+
+
+// ─── Robust MediaPipe Core Vectors ───────────────────────────────────────────
+function dist(a, b) {
+  return Math.hypot(a.x - b.x, a.y - b.y, (a.z || 0) - (b.z || 0));
+}
+
+function getExtendedFingers(landmarks) {
+  const wrist = landmarks[0];
+  const indexMCP = landmarks[5];
+  const fingers = [
+    { name: 'index',  tip: 8,  pip: 6 },
+    { name: 'middle', tip: 12, pip: 10 },
+    { name: 'ring',   tip: 16, pip: 14 },
+    { name: 'pinky',  tip: 20, pip: 18 }
+  ];
+
+  const extended = fingers.map(f => {
+    return dist(wrist, landmarks[f.tip]) > dist(wrist, landmarks[f.pip]) * 1.08;
+  });
+
+  const thumbTip = landmarks[4];
+  const thumbIP = landmarks[3];
+  const pinkyMCP = landmarks[17];
+  const thumbExtended = dist(thumbTip, pinkyMCP) > dist(thumbIP, pinkyMCP) * 1.1;
+
+  return { extended, thumbExtended };
+}
+
+function classifyGesture(landmarks) {
+  const { extended, thumbExtended } = getExtendedFingers(landmarks);
+  const [idx, mid, ring, pinky] = extended;
+  const fingerCount = extended.filter(Boolean).length + (thumbExtended ? 1 : 0);
+
+  if (!state.isTouchActive) {
+    document.getElementById('debugReadout').innerHTML = 
+      `Fingers: T:${thumbExtended?1:0} | I:${idx?1:0} | M:${mid?1:0} | R:${ring?1:0} | P:${pinky?1:0}`;
+  }
+
+  if (fingerCount === 0) return 'pause';
+  if (fingerCount >= 4) return 'erase';
+  if (idx && !mid && !ring && !pinky) return 'draw';
+  
+  return 'none';
+}
+
+// ─── Dynamic UI Update Engine ────────────────────────────────────────────────
+const gestureItems = { draw: 'g-draw', erase: 'g-erase', pause: 'g-pause' };
+const gestureLabel = document.getElementById('gestureLabel');
+const statusDot = document.getElementById('statusDot');
+const statusText = document.getElementById('statusText');
+
+const GESTURE_NAMES = { draw: '☝️ Draw/Touch', erase: '🖐️ Erase', pause: '✊ Pause', none: '—' };
+
+function updateGestureUI(g) {
+  gestureLabel.textContent = GESTURE_NAMES[g] || '—';
+  Object.entries(gestureItems).forEach(([key, id]) => {
+    document.getElementById(id).classList.toggle('active-gesture', key === g);
+  });
+  statusDot.className = 'status-dot';
+  if (g === 'draw') { statusDot.classList.add('drawing'); statusText.textContent = 'DRAWING'; }
+  else if (g === 'erase') { statusDot.classList.add('erasing'); statusText.textContent = 'ERASING'; }
+  else if (g === 'pause') { statusDot.classList.add('paused'); statusText.textContent = 'PAUSED'; }
+  else { statusDot.classList.add('active'); statusText.textContent = 'TRACKING'; }
+}
+
+// ─── Camera Pipeline Processing ──────────────────────────────────────────────
+const videoEl = document.createElement('video');
+videoEl.setAttribute('playsinline', '');
+
+let currentGesture = 'none';
+let gestureBuffer = [];
+const BUFFER_SIZE = 6;
+
+function onResults(results) {
+  // Mobile touch is active, skip camera calculations to optimize frame-rates
+  if (state.isTouchActive) return; 
+
+  const W = drawCanvas.width, H = drawCanvas.height;
+
+  if (!results.multiHandLandmarks || results.multiHandLandmarks.length === 0) {
+    cursor.style.display = 'none';
+    document.getElementById('debugReadout').textContent = "Mode: Air Cam | No Hand";
+    if (currentGesture !== 'none') {
+      currentGesture = 'none';
+      state.lastX = null; state.lastY = null;
+      updateGestureUI('none');
+    }
+    return;
+  }
+
+  const hand = results.multiHandLandmarks[0];
+  const tip = hand[8];
+
+  const x = (1 - tip.x) * W;
+  const y = tip.y * H;
+
+  const g = classifyGesture(hand);
+  gestureBuffer.push(g);
+  if (gestureBuffer.length > BUFFER_SIZE) gestureBuffer.shift();
+  const freq = {};
+  gestureBuffer.forEach(v => freq[v] = (freq[v] || 0) + 1);
+  const dominant = Object.entries(freq).sort((a,b) => b[1]-a[1])[0][0];
+
+  if (dominant !== currentGesture) {
+    currentGesture = dominant;
+    state.lastX = null; state.lastY = null;
+    updateGestureUI(dominant);
+  }
+
+  cursor.style.display = 'block';
+  cursor.style.left = x + 'px';
+  cursor.style.top = y + 'px';
+
+  if (dominant === 'erase') {
+    cursor.style.background = 'rgba(255,0,200,0.2)';
+    cursor.style.border = '2px solid #ff00c8';
+    cursor.style.boxShadow = '0 0 20px #ff00c8';
+    
+    // Air erase routine logic mapping
+    ctx.save();
+    ctx.globalCompositeOperation = 'destination-out';
+    ctx.beginPath();
+    ctx.arc(x, y, state.brushSize * 3, 0, Math.PI * 2);
+    ctx.fillStyle = 'rgba(0,0,0,1)';
+    ctx.fill();
+    ctx.restore();
+    
+    state.lastX = null; state.lastY = null;
+  } else if (dominant === 'pause') {
+    cursor.style.background = 'rgba(255,150,0,0.1)';
+    cursor.style.border = '2px solid #ff9500';
+    cursor.style.boxShadow = '0 0 10px #ff9500';
+    state.lastX = null; state.lastY = null;
+  } else {
+    updateCursor();
+    if (dominant === 'draw') {
+      if (state.lastX !== null) {
+        drawSegment(state.lastX, state.lastY, x, y, state.color, state.brushSize, state.glowSize);
+      }
+      state.lastX = x; state.lastY = y;
+    } else {
+      state.lastX = null; state.lastY = null;
+    }
+  }
+}
+
+// ─── Initialization Pipeline ──────────────────────────────────────────────────
+const loadingBar = document.getElementById('loadingBar');
+const loadingMsg = document.getElementById('loadingMsg');
+const loadingScreen = document.getElementById('loadingScreen');
+const previewMsg = document.getElementById('previewMsg');
+
+async function initApp() {
+  const isMobileDevice = /Android|iPhone|iPad|iPod|WebOS|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
+  
+  if (isMobileDevice) {
+    // If running on phone browser, load interface instantly without forcing camera requirements
+    loadingBar.style.width = '100%';
+    loadingMsg.textContent = 'Mobile Touch Ready!';
+    document.getElementById('debugReadout').textContent = "Mode: Touch Enabled";
+    setTimeout(() => {
+      loadingScreen.style.opacity = '0';
+      setTimeout(() => loadingScreen.style.display = 'none', 500);
+      statusDot.classList.add('active');
+      statusText.textContent = 'TOUCH READY';
+    }, 400);
+    return;
+  }
+
+  // Laptop tracking logic stack fallback 
+  loadingMsg.textContent = 'Loading MediaPipe Tracking…';
+  loadingBar.style.width = '30%';
+
+  const hands = new Hands({ locateFile: f => `https://cdn.jsdelivr.net/npm/@mediapipe/hands/${f}` });
+  hands.setOptions({
+    maxNumHands: 1,
+    modelComplexity: 1,
+    minDetectionConfidence: 0.7,
+    minTrackingConfidence: 0.6,
+  });
+  hands.onResults(onResults);
+
+  try {
+    const stream = await navigator.mediaDevices.getUserMedia({ video: { width: 640, height: 480 }, audio: false });
+    videoEl.srcObject = stream;
+    document.getElementById('previewVideo').srcObject = stream;
+    previewMsg.style.display = 'none';
+
+    const camera = new Camera(videoEl, {
+      onFrame: async () => { if(!state.isTouchActive) await hands.send({ image: videoEl }); },
+      width: 640, height: 480,
+    });
+    await camera.start();
+
+    loadingBar.style.width = '100%';
+    setTimeout(() => {
+      loadingScreen.style.opacity = '0';
+      setTimeout(() => loadingScreen.style.display = 'none', 500);
+      statusDot.classList.add('active');
+      statusText.textContent = 'TRACKING';
+    }, 400);
+
+  } catch (err) {
+    console.warn("Camera missed, unlocking full touch fallback structure:", err);
+    loadingMsg.textContent = 'Camera blocked. Launching Touch Mode...';
+    setTimeout(() => {
+      loadingScreen.style.display = 'none';
+      statusDot.classList.add('active');
+      statusText.textContent = 'TOUCH MODE';
+    }, 1200);
+  }
+}
+
+// ─── Bottom Actions Buttons ──────────────────────────────────────────────────
+function clearCanvas() {
+  ctx.clearRect(0, 0, drawCanvas.width, drawCanvas.height);
+}
+
+function saveCanvas() {
+  const link = document.createElement('a');
+  const tmp = document.createElement('canvas');
+  tmp.width = drawCanvas.width; tmp.height = drawCanvas.height;
+  const tc = tmp.getContext('2d');
+  tc.fillStyle = '#000';
+  tc.fillRect(0, 0, tmp.width, tmp.height);
+  tc.drawImage(drawCanvas, 0, 0);
+  link.download = 'neon-art-' + Date.now() + '.png';
+  link.href = tmp.toDataURL();
+  link.click();
+}
+
+initApp();
+</script>
+</body>
+</html>
