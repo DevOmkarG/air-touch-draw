@@ -16,7 +16,8 @@
     --border: rgba(0, 255, 247, 0.15);
   }
 
-  * { margin: 0; padding: 0; box-sizing: border-box; touch-action: none; }
+  /* FIX: touch-action: none ko universal se hata diya */
+  * { margin: 0; padding: 0; box-sizing: border-box; }
 
   body {
     background: var(--dark);
@@ -91,11 +92,13 @@
     overflow: hidden;
   }
 
+  /* FIX: touch-action: none ko sirf drawCanvas par apply kiya taaki drawing karte waqt page scroll na ho */
   #drawCanvas {
     position: absolute;
     inset: 0;
     width: 100%;
     height: 100%;
+    touch-action: none; 
   }
 
   #webcamCanvas {
@@ -414,45 +417,23 @@
     box-shadow: 0 0 10px rgba(255,0,200,0.1);
   }
 
-  /* Webcam mini preview */
-  .preview-wrap {
-    position: relative;
-    width: 100%;
-    aspect-ratio: 4/3;
-    background: #000;
-    border-radius: 8px;
-    overflow: hidden;
-    border: 1px solid var(--border);
-  }
-
-  #previewVideo {
-    width: 100%;
-    height: 100%;
-    object-fit: cover;
-    transform: scaleX(-1);
-    display: block;
-  }
-
-  .preview-overlay {
-    position: absolute;
-    inset: 0;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-size: 0.6rem;
-    letter-spacing: 0.1em;
-    text-transform: uppercase;
-    color: rgba(255,255,255,0.3);
-  }
-
-  /* Responsive layout tweaks for smaller devices */
+  /* Responsive layout tweaks for mobile view */
   @media(max-width: 768px) {
-    body { height: auto; overflow: auto; }
-    .main { flex-direction: column; height: auto; }
-    .canvas-area { width: 100%; height: 60vh; min-height: 400px; }
-    .panel { width: 100%; border-left: none; border-top: 1px solid var(--border); }
+    body { height: 100vh; overflow: hidden; } /* Lock body to avoid bouncing */
+    .main { flex-direction: column; height: calc(100vh - 45px); }
+    .canvas-area { width: 100%; height: 55vh; min-height: 350px; }
+    
+    /* FIX: Panel scroll tracking properties enhanced */
+    .panel { 
+      width: 100%; 
+      flex: 1;
+      border-left: none; 
+      border-top: 1px solid var(--border); 
+      overflow-y: scroll; 
+      -webkit-overflow-scrolling: touch; 
+    }
     .preview-wrap { display: none; }
-    .panel-section:first-child { display: none; } /* Hide camera preview on mobile setup */
+    .panel-section:first-child { display: none; } 
   }
 
   /* Glow effect */
@@ -575,7 +556,7 @@
 <script src="https://cdn.jsdelivr.net/npm/@mediapipe/hands/hands.js" crossorigin="anonymous"></script>
 
 <script>
-// ─── State ───────────────────────────────────────────────────────────────────
+// ─── App Global Context State ────────────────────────────────────────────────
 const state = {
   color: '#00fff7',
   brushSize: 8,
@@ -585,10 +566,10 @@ const state = {
   lastX: null,
   lastY: null,
   isDrawing: false,
-  isTouchActive: false, // Flag to identify if user is using mobile touch screen
+  isTouchActive: false, 
 };
 
-// ─── Canvas setup ────────────────────────────────────────────────────────────
+// ─── Canvas Render Components Setup ──────────────────────────────────────────
 const drawCanvas = document.getElementById('drawCanvas');
 const ctx = drawCanvas.getContext('2d');
 const webcamCanvas = document.getElementById('webcamCanvas');
@@ -598,7 +579,6 @@ function resizeCanvases() {
   const area = drawCanvas.parentElement;
   const w = area.clientWidth, h = area.clientHeight;
   
-  // Create safe fallback layout dimensions on active canvas content updates
   const tempCanvas = document.createElement('canvas');
   tempCanvas.width = drawCanvas.width; tempCanvas.height = drawCanvas.height;
   const tCtx = tempCanvas.getContext('2d');
@@ -614,7 +594,7 @@ function resizeCanvases() {
 resizeCanvases();
 window.addEventListener('resize', () => setTimeout(resizeCanvases, 100));
 
-// ─── Colors Palette Generator ────────────────────────────────────────────────
+// ─── Colors Swatches Rendering engine ────────────────────────────────────────
 const PALETTE = [
   '#00fff7','#ff00c8','#39ff14','#ff6600','#ffffff',
   '#ffd700','#7b2fff','#ff4466','#00b4ff','#ff99cc'
@@ -644,7 +624,7 @@ document.getElementById('colorPicker').addEventListener('input', e => {
   document.querySelectorAll('.swatch').forEach(s => s.classList.remove('active'));
 });
 
-// ─── Sliders Binder ──────────────────────────────────────────────────────────
+// ─── Sliders Component Logic ─────────────────────────────────────────────────
 function bindSlider(id, valId, key) {
   const el = document.getElementById(id);
   const valEl = document.getElementById(valId);
@@ -658,7 +638,7 @@ bindSlider('brushSize', 'brushSizeVal', 'brushSize');
 bindSlider('glowSize', 'glowSizeVal', 'glowSize');
 bindSlider('fadeRate', 'fadeRateVal', 'fadeRate');
 
-// ─── Floating Particle Cursor ────────────────────────────────────────────────
+// ─── Cursor Glow Indicator Styling ───────────────────────────────────────────
 const cursor = document.getElementById('cursor');
 function updateCursor() {
   const s = state.brushSize * 2;
@@ -670,7 +650,7 @@ function updateCursor() {
 }
 updateCursor();
 
-// ─── Rendering Core Engine ───────────────────────────────────────────────────
+// ─── Core Drawing Brush Engine ───────────────────────────────────────────────
 function drawSegment(x1, y1, x2, y2, color, size, glow) {
   ctx.save();
   ctx.lineCap = 'round';
@@ -715,7 +695,7 @@ function drawSegment(x1, y1, x2, y2, color, size, glow) {
   ctx.restore();
 }
 
-// ─── Fade loop Engine ────────────────────────────────────────────────────────
+// ─── Trail Fade Simulation Loop ─────────────────────────────────────────────
 let lastFadeTime = 0;
 function fadeLoop(ts) {
   if (state.fadeRate > 0 && ts - lastFadeTime > 40) {
@@ -730,7 +710,7 @@ function fadeLoop(ts) {
 }
 requestAnimationFrame(fadeLoop);
 
-// ─── Mobile Touch Control Matrix ─────────────────────────────────────────────
+// ─── Mobile Touch Coordination Logic ─────────────────────────────────────────
 function getTouchPos(e) {
   const rect = drawCanvas.getBoundingClientRect();
   const touch = e.touches[0] || e.changedTouches[0];
@@ -741,7 +721,6 @@ function getTouchPos(e) {
 }
 
 drawCanvas.addEventListener('touchstart', (e) => {
-  e.preventDefault();
   state.isTouchActive = true;
   const pos = getTouchPos(e);
   state.lastX = pos.x;
@@ -757,7 +736,6 @@ drawCanvas.addEventListener('touchstart', (e) => {
 });
 
 drawCanvas.addEventListener('touchmove', (e) => {
-  e.preventDefault();
   if (!state.lastX) return;
   const pos = getTouchPos(e);
   
@@ -770,7 +748,6 @@ drawCanvas.addEventListener('touchmove', (e) => {
 });
 
 drawCanvas.addEventListener('touchend', (e) => {
-  e.preventDefault();
   state.lastX = null;
   state.lastY = null;
   cursor.style.display = 'none';
@@ -778,14 +755,13 @@ drawCanvas.addEventListener('touchend', (e) => {
 });
 
 
-// ─── Robust MediaPipe Core Vectors ───────────────────────────────────────────
+// ─── MediaPipe Geometric Hand Mathematical Evaluators ──────────────────────
 function dist(a, b) {
   return Math.hypot(a.x - b.x, a.y - b.y, (a.z || 0) - (b.z || 0));
 }
 
 function getExtendedFingers(landmarks) {
   const wrist = landmarks[0];
-  const indexMCP = landmarks[5];
   const fingers = [
     { name: 'index',  tip: 8,  pip: 6 },
     { name: 'middle', tip: 12, pip: 10 },
@@ -822,7 +798,7 @@ function classifyGesture(landmarks) {
   return 'none';
 }
 
-// ─── Dynamic UI Update Engine ────────────────────────────────────────────────
+// ─── Active Interface Realtime Synchronization ──────────────────────────────
 const gestureItems = { draw: 'g-draw', erase: 'g-erase', pause: 'g-pause' };
 const gestureLabel = document.getElementById('gestureLabel');
 const statusDot = document.getElementById('statusDot');
@@ -833,7 +809,8 @@ const GESTURE_NAMES = { draw: '☝️ Draw/Touch', erase: '🖐️ Erase', pause
 function updateGestureUI(g) {
   gestureLabel.textContent = GESTURE_NAMES[g] || '—';
   Object.entries(gestureItems).forEach(([key, id]) => {
-    document.getElementById(id).classList.toggle('active-gesture', key === g);
+    const el = document.getElementById(id);
+    if(el) el.classList.toggle('active-gesture', key === g);
   });
   statusDot.className = 'status-dot';
   if (g === 'draw') { statusDot.classList.add('drawing'); statusText.textContent = 'DRAWING'; }
@@ -842,7 +819,7 @@ function updateGestureUI(g) {
   else { statusDot.classList.add('active'); statusText.textContent = 'TRACKING'; }
 }
 
-// ─── Camera Pipeline Processing ──────────────────────────────────────────────
+// ─── Camera Ingestion Handlers ───────────────────────────────────────────────
 const videoEl = document.createElement('video');
 videoEl.setAttribute('playsinline', '');
 
@@ -851,7 +828,6 @@ let gestureBuffer = [];
 const BUFFER_SIZE = 6;
 
 function onResults(results) {
-  // Mobile touch is active, skip camera calculations to optimize frame-rates
   if (state.isTouchActive) return; 
 
   const W = drawCanvas.width, H = drawCanvas.height;
@@ -895,7 +871,6 @@ function onResults(results) {
     cursor.style.border = '2px solid #ff00c8';
     cursor.style.boxShadow = '0 0 20px #ff00c8';
     
-    // Air erase routine logic mapping
     ctx.save();
     ctx.globalCompositeOperation = 'destination-out';
     ctx.beginPath();
@@ -923,7 +898,7 @@ function onResults(results) {
   }
 }
 
-// ─── Initialization Pipeline ──────────────────────────────────────────────────
+// ─── Engine Initialization Stack ─────────────────────────────────────────────
 const loadingBar = document.getElementById('loadingBar');
 const loadingMsg = document.getElementById('loadingMsg');
 const loadingScreen = document.getElementById('loadingScreen');
@@ -933,7 +908,6 @@ async function initApp() {
   const isMobileDevice = /Android|iPhone|iPad|iPod|WebOS|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
   
   if (isMobileDevice) {
-    // If running on phone browser, load interface instantly without forcing camera requirements
     loadingBar.style.width = '100%';
     loadingMsg.textContent = 'Mobile Touch Ready!';
     document.getElementById('debugReadout').textContent = "Mode: Touch Enabled";
@@ -946,7 +920,6 @@ async function initApp() {
     return;
   }
 
-  // Laptop tracking logic stack fallback 
   loadingMsg.textContent = 'Loading MediaPipe Tracking…';
   loadingBar.style.width = '30%';
 
@@ -963,7 +936,7 @@ async function initApp() {
     const stream = await navigator.mediaDevices.getUserMedia({ video: { width: 640, height: 480 }, audio: false });
     videoEl.srcObject = stream;
     document.getElementById('previewVideo').srcObject = stream;
-    previewMsg.style.display = 'none';
+    if(previewMsg) previewMsg.style.display = 'none';
 
     const camera = new Camera(videoEl, {
       onFrame: async () => { if(!state.isTouchActive) await hands.send({ image: videoEl }); },
@@ -990,7 +963,7 @@ async function initApp() {
   }
 }
 
-// ─── Bottom Actions Buttons ──────────────────────────────────────────────────
+// ─── Action Elements ─────────────────────────────────────────────────────────
 function clearCanvas() {
   ctx.clearRect(0, 0, drawCanvas.width, drawCanvas.height);
 }
