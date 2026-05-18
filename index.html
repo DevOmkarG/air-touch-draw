@@ -3,9 +3,9 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
-<title>✦ NEON BRUSH STUDIO</title>
+<title>✦ ULTRA NEON STUDIO Pro</title>
 <style>
-  @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;600;800&family=Space+Grotesk:wght@400;700&display=swap');
+  @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;600;700;800&family=Space+Grotesk:wght@400;700&display=swap');
 
   :root {
     --neon-cyan: #00f0ff;
@@ -28,13 +28,12 @@
     overflow: hidden;
   }
 
-  /* Tech Grid Overlay */
   .grid-bg {
     position: absolute;
     inset: 0;
     background-image: 
-      linear-gradient(rgba(0, 240, 255, 0.015) 1px, transparent 1px),
-      linear-gradient(90deg, rgba(0, 240, 255, 0.015) 1px, transparent 1px);
+      linear-gradient(rgba(0, 240, 255, 0.012) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(0, 240, 255, 0.012) 1px, transparent 1px);
     background-size: 30px 30px;
     background-position: center;
     pointer-events: none;
@@ -47,16 +46,11 @@
     display: flex;
     flex-direction: column;
     z-index: 5;
-    transition: all 0.5s cubic-bezier(0.16, 1, 0.3, 1);
   }
 
-  .screen-hidden {
-    opacity: 0;
-    pointer-events: none;
-    transform: scale(1.03);
-  }
+  .screen-hidden { opacity: 0; pointer-events: none; transform: scale(1.02); }
 
-  /* ─── SCREEN 1: DRAWING THEMED WELCOME SCREEN ─── */
+  /* ─── WELCOME SCREEN ─── */
   #splashScreen {
     justify-content: center;
     align-items: center;
@@ -64,319 +58,148 @@
     background: radial-gradient(circle at center, #090915 0%, var(--bg-dark) 100%);
   }
 
-  .splash-container {
-    text-align: center;
-    z-index: 5;
-    max-width: 480px;
-    animation: fadeInUp 0.8s ease;
-  }
+  .splash-container { text-align: center; z-index: 5; max-width: 480px; }
 
   .splash-badge {
-    background: rgba(0, 240, 255, 0.06);
-    border: 1px solid rgba(0, 240, 255, 0.2);
-    padding: 6px 16px;
-    border-radius: 30px;
-    font-size: 0.7rem;
-    font-weight: 600;
-    letter-spacing: 0.25em;
-    color: var(--neon-cyan);
-    text-transform: uppercase;
-    display: inline-block;
-    margin-bottom: 20px;
+    background: rgba(0, 240, 255, 0.05);
+    border: 1px solid rgba(0, 240, 255, 0.18);
+    padding: 6px 16px; border-radius: 30px;
+    font-size: 0.7rem; font-weight: 600; letter-spacing: 0.22em;
+    color: var(--neon-cyan); text-transform: uppercase; display: inline-block; margin-bottom: 20px;
   }
 
   .splash-title {
-    font-family: var(--font-display);
-    font-weight: 700;
-    font-size: 2.6rem;
-    letter-spacing: -0.02em;
-    line-height: 1.1;
-    margin-bottom: 16px;
+    font-family: var(--font-display); font-weight: 700; font-size: 2.6rem;
+    letter-spacing: -0.02em; line-height: 1.1; margin-bottom: 16px;
     background: linear-gradient(135deg, #ffffff 40%, #a5b4fc 100%);
-    -webkit-background-clip: text;
-    -webkit-text-fill-color: transparent;
+    -webkit-background-clip: text; -webkit-text-fill-color: transparent;
   }
 
-  .splash-desc {
-    color: #9ca3af;
-    font-size: 0.9rem;
-    line-height: 1.6;
-    margin-bottom: 35px;
-    font-weight: 300;
-  }
-
+  .splash-desc { color: #9ca3af; font-size: 0.9rem; line-height: 1.6; margin-bottom: 35px; font-weight: 300; }
   .start-btn {
-    background: linear-gradient(135deg, var(--neon-cyan), #0072ff);
-    border: none;
-    color: #fff;
-    font-family: var(--font-display);
-    font-size: 0.9rem;
-    font-weight: 700;
-    letter-spacing: 0.1em;
-    text-transform: uppercase;
-    padding: 16px 36px;
-    border-radius: 12px;
-    cursor: pointer;
-    box-shadow: 0 4px 20px rgba(0, 240, 255, 0.3);
-    transition: all 0.2s ease;
+    background: linear-gradient(135deg, var(--neon-cyan), #0072ff); border: none; color: #fff;
+    font-family: var(--font-display); font-size: 0.9rem; font-weight: 700; letter-spacing: 0.1em;
+    text-transform: uppercase; padding: 16px 36px; border-radius: 12px; cursor: pointer;
+    box-shadow: 0 4px 20px rgba(0, 240, 255, 0.25);
   }
 
-  .start-btn:active {
-    transform: scale(0.96);
-  }
-
-  /* ─── SCREEN 2: MAIN DRAWING STUDIO ─── */
+  /* ─── MAIN WORKSPACE ─── */
   header {
-    height: 55px;
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    padding: 0 20px;
-    border-bottom: 1px solid var(--border);
-    background: var(--surface);
-    backdrop-filter: blur(10px);
-    z-index: 10;
+    height: 50px; display: flex; align-items: center; justify-content: space-between;
+    padding: 0 20px; border-bottom: 1px solid var(--border); background: var(--surface);
+    backdrop-filter: blur(10px); z-index: 12; flex-shrink: 0;
+    transition: margin-top 0.4s cubic-bezier(0.16, 1, 0.3, 1);
   }
 
-  .header-logo {
-    font-family: var(--font-display);
-    font-weight: 700;
-    font-size: 1.1rem;
-    letter-spacing: 0.05em;
-    color: #fff;
-  }
+  .header-fullscreen { margin-top: -50px; }
+
+  .header-logo { font-family: var(--font-display); font-weight: 700; font-size: 1.1rem; color: #fff; }
   .header-logo span { color: var(--neon-cyan); }
 
-  .workspace-layout {
-    display: flex;
-    flex-direction: column;
-    flex: 1;
-    min-height: 0;
-  }
+  .workspace-layout { display: flex; flex-direction: column; flex: 1; min-height: 0; position: relative; }
 
   .canvas-wrapper {
-    position: relative;
-    flex: 1;
-    background: #000;
-    min-height: 0;
+    position: relative; background: #000; width: 100%; height: 62vh; flex-shrink: 0;
+    transition: height 0.02s linear;
   }
 
-  #drawCanvas {
-    position: absolute;
-    inset: 0;
-    width: 100%;
-    height: 100%;
-    touch-action: none;
+  .canvas-fullscreen { height: 100% !important; flex-grow: 1 !important; }
+
+  #drawCanvas { position: absolute; inset: 0; width: 100%; height: 100%; touch-action: none; }
+
+  /* FLOATING TOP UTILITIES OVERLAY BAR */
+  .floating-controls-bar {
+    position: absolute; top: 12px; right: 12px; left: 12px;
+    z-index: 15; display: flex; justify-content: space-between; pointer-events: none;
   }
 
+  .left-tools, .right-tools { display: flex; gap: 8px; pointer-events: auto; }
+
+  /* Universal matching circular utility button style */
+  .tool-icon-btn {
+    background: rgba(13, 13, 25, 0.6); border: 1px solid var(--border);
+    color: #fff; width: 36px; height: 36px; border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    cursor: pointer; backdrop-filter: blur(8px); transition: all 0.2s ease;
+  }
+  .tool-icon-btn:active, .tool-icon-btn.active-mode {
+    background: var(--neon-cyan); color: #000; box-shadow: 0 0 12px var(--neon-cyan); border-color: #fff;
+  }
+
+  /* UPDATE: Clear button matches the exact circular icon design specs */
   .floating-clear-trigger {
-    position: absolute;
-    top: 12px;
-    right: 12px;
-    z-index: 15;
-    background: rgba(255, 0, 123, 0.15);
-    border: 1px solid rgba(255, 0, 123, 0.4);
+    background: rgba(255, 0, 123, 0.15); border: 1px solid rgba(255, 0, 123, 0.4);
     color: #ff007b;
-    padding: 8px 14px;
-    font-family: var(--font-display);
-    font-size: 0.7rem;
-    font-weight: 700;
-    text-transform: uppercase;
-    border-radius: 30px;
-    cursor: pointer;
-    backdrop-filter: blur(8px);
-    display: flex;
-    align-items: center;
-    gap: 6px;
-    box-shadow: 0 0 10px rgba(255, 0, 123, 0.1);
   }
-
   .floating-clear-trigger:active {
-    background: var(--neon-pink);
-    color: #fff;
+    background: var(--neon-pink); color: #fff; box-shadow: 0 0 12px var(--neon-pink); border-color: #fff;
   }
 
-  /* ─── CONTROLS BOTTOM PANEL ─── */
+  /* ─── RESIZE RESIZABLE DIVIDER BAR ─── */
+  .resize-divider {
+    height: 14px; width: 100%; background: rgba(10, 10, 20, 0.95);
+    border-top: 1px solid var(--border); border-bottom: 1px solid var(--border);
+    cursor: ns-resize; z-index: 20; display: flex; justify-content: center; align-items: center;
+    flex-shrink: 0; touch-action: none;
+  }
+  .resize-divider-hidden { display: none !important; }
+
+  .resize-divider::after {
+    content: ''; width: 36px; height: 3px; background: rgba(0, 240, 255, 0.4);
+    box-shadow: 0 0 6px var(--neon-cyan); border-radius: 4px;
+  }
+  .resize-divider:active::after { background: var(--neon-cyan); width: 45px; }
+
+  /* ─── CONTROL INSTRUMENT PANEL DOCK ─── */
   .control-dock {
-    background: var(--surface);
-    border-top: 1px solid var(--border);
-    backdrop-filter: blur(20px);
-    padding: 16px 20px;
-    display: flex;
-    flex-direction: column;
-    gap: 14px;
-    z-index: 10;
+    background: var(--surface); backdrop-filter: blur(20px); padding: 14px 20px;
+    display: flex; flex-direction: column; gap: 12px; z-index: 10; flex-grow: 1; overflow-y: auto;
+    transition: transform 0.4s cubic-bezier(0.16, 1, 0.3, 1), max-height 0.4s ease;
   }
+  .dock-fullscreen { transform: translateY(100%); max-height: 0px; padding: 0; overflow: hidden; border: none; }
 
-  .dock-section {
-    display: flex;
-    flex-direction: column;
-    gap: 6px;
-  }
+  .dock-section { display: flex; flex-direction: column; gap: 6px; }
+  .dock-label { font-size: 0.58rem; font-weight: 700; letter-spacing: 0.12em; text-transform: uppercase; color: #6b7280; }
 
-  .dock-label {
-    font-size: 0.6rem;
-    font-weight: 700;
-    letter-spacing: 0.12em;
-    text-transform: uppercase;
-    color: #6b7280;
-  }
-
-  /* Trigger Button to Open Universal System Color Grid */
-  .color-selector-wrapper {
-    position: relative;
-    width: 100%;
-  }
-
+  .color-selector-wrapper { position: relative; width: 100%; }
   .color-trigger-btn {
-    width: 100%;
-    padding: 12px;
-    background: rgba(255, 255, 255, 0.03);
-    border: 1px solid var(--border);
-    border-radius: 10px;
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    cursor: pointer;
-    transition: all 0.2s ease;
-  }
-  
-  .color-trigger-btn:active {
-    background: rgba(0, 240, 255, 0.05);
+    width: 100%; padding: 12px; background: rgba(255, 255, 255, 0.02);
+    border: 1px solid var(--border); border-radius: 10px;
+    display: flex; align-items: center; justify-content: space-between;
   }
 
-  .color-preview-group {
-    display: flex;
-    align-items: center;
-    gap: 10px;
-  }
-
+  .color-preview-group { display: flex; align-items: center; gap: 10px; }
   .current-color-dot {
-    width: 20px;
-    height: 20px;
-    border-radius: 50%;
-    background: #00f0ff;
-    box-shadow: 0 0 10px var(--neon-cyan);
-    border: 1px solid rgba(255,255,255,0.5);
-    transition: background 0.2s;
+    width: 18px; height: 18px; border-radius: 50%; background: #00f0ff;
+    box-shadow: 0 0 10px var(--neon-cyan); border: 1px solid rgba(255,255,255,0.4);
   }
+  .color-btn-text { font-size: 0.72rem; font-weight: 600; color: #d1d5db; }
+  #hiddenColorPicker { position: absolute; inset: 0; opacity: 0; width: 100%; height: 100%; cursor: pointer; }
 
-  .color-btn-text {
-    font-size: 0.75rem;
-    font-weight: 600;
-    color: #e5e7eb;
-  }
+  .sliders-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 12px; }
+  .slider-card { background: rgba(255, 255, 255, 0.01); border: 1px solid rgba(255, 255, 255, 0.03); border-radius: 8px; padding: 8px 10px; }
+  .slider-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 4px; }
+  .slider-name { font-size: 0.55rem; text-transform: uppercase; color: #9ca3af; }
+  .slider-monitor { font-size: 0.6rem; font-weight: 700; color: var(--neon-cyan); }
 
-  #hiddenColorPicker {
-    position: absolute;
-    inset: 0;
-    opacity: 0;
-    width: 100%;
-    height: 100%;
-    cursor: pointer;
-  }
+  input[type=range] { -webkit-appearance: none; width: 100%; height: 3px; background: rgba(255, 255, 255, 0.08); border-radius: 2px; outline: none; }
+  input[type=range]::-webkit-slider-thumb { -webkit-appearance: none; width: 12px; height: 12px; border-radius: 50%; background: #fff; box-shadow: 0 0 6px var(--neon-cyan); }
 
-  /* Sliders Setup */
-  .sliders-grid {
-    display: grid;
-    grid-template-columns: repeat(2, 1fr);
-    gap: 12px;
-  }
-
-  .slider-card {
-    background: rgba(255, 255, 255, 0.02);
-    border: 1px solid rgba(255, 255, 255, 0.04);
-    border-radius: 8px;
-    padding: 8px 10px;
-  }
-
-  .slider-header {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    margin-bottom: 4px;
-  }
-  .slider-name { font-size: 0.58rem; text-transform: uppercase; color: #9ca3af; }
-  .slider-monitor { font-size: 0.62rem; font-weight: 700; color: var(--neon-cyan); }
-
-  input[type=range] {
-    -webkit-appearance: none;
-    width: 100%;
-    height: 3px;
-    background: rgba(255, 255, 255, 0.08);
-    border-radius: 2px;
-    outline: none;
-  }
-  input[type=range]::-webkit-slider-thumb {
-    -webkit-appearance: none;
-    width: 12px;
-    height: 12px;
-    border-radius: 50%;
-    background: #fff;
-    box-shadow: 0 0 6px var(--neon-cyan);
-  }
-
-  /* Export Button Action */
-  .action-deck-row {
-    display: flex;
-  }
-
+  .action-deck-row { display: flex; }
   .action-btn {
-    width: 100%;
-    padding: 12px 0;
-    border: 1px solid rgba(0, 240, 255, 0.2);
-    background: rgba(0, 240, 255, 0.03);
-    color: var(--neon-cyan);
-    font-family: var(--font-display);
-    font-weight: 700;
-    font-size: 0.75rem;
-    letter-spacing: 0.05em;
-    text-transform: uppercase;
-    border-radius: 8px;
-    cursor: pointer;
-  }
-  .action-btn:active {
-    background: var(--neon-cyan);
-    color: #000;
+    width: 100%; padding: 12px 0; border: 1px solid rgba(0, 240, 255, 0.18);
+    background: rgba(0, 240, 255, 0.02); color: var(--neon-cyan);
+    font-family: var(--font-display); font-weight: 700; font-size: 0.75rem;
+    letter-spacing: 0.05em; text-transform: uppercase; border-radius: 8px; cursor: pointer;
   }
 
-  /* ─── MOBILE RESPONSIVE STRUCTURES (MAX SPACE ALLOCATION) ─── */
   @media(max-width: 768px) {
-    body { height: 100vh; overflow: hidden; } 
-    .main { flex-direction: column; height: calc(100vh - 55px); }
-    
-    /* CRITICAL CHANGE: Drawing Canvas gets 80% Height Space allocation */
-    .canvas-wrapper { width: 100%; height: 80vh; flex-shrink: 0; }
-    
-    /* Clean, non-scrollable control bar perfectly fitted into 20% viewport space */
-    .control-dock { 
-      width: 100%; 
-      flex: 1; 
-      border-left: none; 
-      padding: 12px 16px;
-      gap: 10px;
-      overflow: hidden;
-    }
-    .slider-card { padding: 6px 8px; }
+    body { height: 100vh; overflow: hidden; }
+    .panel-section { border-bottom: 1px solid rgba(0, 240, 255, 0.1); }
   }
 
-  @keyframes fadeInUp {
-    from { opacity: 0; transform: translateY(15px); }
-    to { opacity: 1; transform: translateY(0); }
-  }
-
-  .ambient-blur {
-    position: absolute;
-    width: 200px;
-    height: 200px;
-    background: radial-gradient(circle, var(--neon-glow) 0%, transparent 70%);
-    filter: blur(40px);
-    pointer-events: none;
-    z-index: 2;
-    opacity: 0.3;
-  }
-  .blur-top { top: -40px; right: -40px; }
-  .blur-bottom { bottom: -40px; left: -40px; }
+  .ambient-blur { position: absolute; width: 200px; height: 200px; background: radial-gradient(circle, var(--neon-glow) 0%, transparent 70%); filter: blur(40px); pointer-events: none; z-index: 2; opacity: 0.25; }
+  .blur-top { top: -40px; right: -40px; } .blur-bottom { bottom: -40px; left: -40px; }
 </style>
 </head>
 <body>
@@ -395,32 +218,39 @@
   </div>
 
   <div class="app-screen screen-hidden" id="workspaceScreen">
-    <header>
+    <header id="appHeader">
       <div class="header-logo">NEON<span>BRUSH</span></div>
-      <div class="status-badge">
-        <div class="status-dot"></div>
-      </div>
     </header>
 
-    <div class="workspace-layout">
-      <div class="canvas-wrapper">
-        <button class="floating-clear-trigger" onclick="clearCanvas()">
-          <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M3 6h18M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg>
-          Clear
-        </button>
+    <div class="workspace-layout" id="workspaceLayoutBox">
+      
+      <div class="canvas-wrapper" id="resizableWrapper">
+        <div class="floating-controls-bar">
+          <div class="left-tools">
+            <button class="tool-icon-btn" id="btnFullscreen" onclick="toggleFullscreenMode()" title="Full Screen">⤢</button>
+            <button class="tool-icon-btn" id="btnEraser" onclick="toggleEraserMode()" title="Eraser Mode">🧽</button>
+          </div>
+          <div class="right-tools">
+            <button class="tool-icon-btn floating-clear-trigger" onclick="clearCanvas()" title="Clear Canvas">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M3 6h18M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg>
+            </button>
+          </div>
+        </div>
         <canvas id="drawCanvas"></canvas>
       </div>
 
-      <div class="control-dock">
-        <div class="dock-section">
+      <div class="resize-divider" id="dragResizeHandle"></div>
+
+      <div class="control-dock" id="controlDockPanel">
+        <div class="dock-section" id="colorSectionBlock">
           <div class="dock-label">Brush Color Pipeline</div>
           <div class="color-selector-wrapper">
             <div class="color-trigger-btn">
               <div class="color-preview-group">
                 <div class="current-color-dot" id="colorDisplayNode"></div>
-                <span class="color-btn-text">Choose Custom Color...</span>
+                <span class="color-btn-text" id="colorBtnText">Choose Custom Color...</span>
               </div>
-              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#6b7280" stroke-width="2"><path d="M6 9l6 6 6-6"/></svg>
+              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#6b7280" stroke-width="2"><path d="M6 9l6 6 6-6"/></svg>
             </div>
             <input type="color" id="hiddenColorPicker" value="#00f0ff">
           </div>
@@ -448,27 +278,33 @@
           <button class="action-btn" onclick="saveCanvas()">Save Artwork PNG</button>
         </div>
       </div>
+
     </div>
   </div>
 
 <script>
-// ─── Global State Architecture Mapping ───────────────────────────────────────
+// ─── Pipeline Global Settings & Engine States ────────────────────────────────
 const appPipeline = {
   currentColor: '#00f0ff',
   brushSize: 8,
   glowSize: 20,
   coordX: null,
-  coordY: null
+  coordY: null,
+  isEraserActive: false,    
+  isFullscreenActive: false  
 };
 
-// ─── Workspace Initializer Operations Triggers ───────────────────────────────
 function enterWorkspace() {
   document.getElementById('splashScreen').classList.add('screen-hidden');
   document.getElementById('workspaceScreen').classList.remove('screen-hidden');
-  setTimeout(executeCanvasSizingRoutine, 150);
+  setTimeout(() => {
+    const defaultCanvasHeight = window.innerHeight * 0.62; 
+    document.getElementById('resizableWrapper').style.height = defaultCanvasHeight + 'px';
+    executeCanvasSizingRoutine();
+  }, 150);
 }
 
-// ─── Resolution Calibration Setup Matrices ───────────────────────────────────
+// ─── High-Fidelity Canvas Matrix Redraw Pipeline ─────────────────────────────
 const canvas = document.getElementById('drawCanvas');
 const ctx = canvas.getContext('2d');
 
@@ -486,18 +322,104 @@ function executeCanvasSizingRoutine() {
 }
 window.addEventListener('resize', () => setTimeout(executeCanvasSizingRoutine, 100));
 
-// ─── Universal Color Picker Matrix System Event Receivers ────────────────────
+// ─── UNLIMITED RESIZE ALGORITHM (UNLOCKED FREEDOM WINDOWS) ───────────────────
+const resizeHandle = document.getElementById('dragResizeHandle');
+const resizableWrapper = document.getElementById('resizableWrapper');
+const workspaceLayoutBox = document.getElementById('workspaceLayoutBox');
+
+function handleResizeDrag(clientRawY) {
+  if (appPipeline.isFullscreenActive) return; 
+  
+  const layoutBounds = workspaceLayoutBox.getBoundingClientRect();
+  let targetHeight = clientRawY - layoutBounds.top;
+
+  const minAllowedHeight = 100;
+  const maxAllowedHeight = layoutBounds.height - 40; 
+
+  if (targetHeight < minAllowedHeight) targetHeight = minAllowedHeight;
+  if (targetHeight > maxAllowedHeight) targetHeight = maxAllowedHeight;
+
+  resizableWrapper.style.height = targetHeight + 'px';
+  executeCanvasSizingRoutine();
+}
+
+resizeHandle.addEventListener('touchstart', (e) => { e.preventDefault(); }, {passive: false});
+resizeHandle.addEventListener('touchmove', (e) => {
+  e.preventDefault();
+  handleResizeDrag(e.touches[0].clientY);
+}, {passive: false});
+
+resizeHandle.addEventListener('mousedown', (e) => {
+  e.preventDefault();
+  function onMouseMove(moveEvent) { handleResizeDrag(moveEvent.clientY); }
+  function onMouseUp() {
+    window.removeEventListener('mousemove', onMouseMove);
+    window.removeEventListener('mouseup', onMouseUp);
+  }
+  window.addEventListener('mousemove', onMouseMove);
+  window.addEventListener('mouseup', onMouseUp);
+});
+
+
+// ─── FULL SCREEN MANAGER TRANSITIONS SYSTEM ─────────────────────────────────
+function toggleFullscreenMode() {
+  appPipeline.isFullscreenActive = !appPipeline.isFullscreenActive;
+  
+  const appHeader = document.getElementById('appHeader');
+  const controlDockPanel = document.getElementById('controlDockPanel');
+  const resizeDivider = document.getElementById('dragResizeHandle');
+  const btnFullscreen = document.getElementById('btnFullscreen');
+
+  if (appPipeline.isFullscreenActive) {
+    appHeader.classList.add('header-fullscreen');
+    controlDockPanel.classList.add('dock-fullscreen');
+    resizeDivider.classList.add('resize-divider-hidden');
+    resizableWrapper.classList.add('canvas-fullscreen');
+    btnFullscreen.textContent = '⤡';
+    btnFullscreen.classList.add('active-mode');
+  } else {
+    appHeader.classList.remove('header-fullscreen');
+    controlDockPanel.classList.remove('dock-fullscreen');
+    resizeDivider.classList.remove('resize-divider-hidden');
+    resizableWrapper.classList.remove('canvas-fullscreen');
+    btnFullscreen.textContent = '⤢';
+    btnFullscreen.classList.remove('active-mode');
+  }
+  setTimeout(executeCanvasSizingRoutine, 300);
+}
+
+
+// ─── PHOTOREALISTIC ERASER VECTOR ROUTINES ──────────────────────────────────
+function toggleEraserMode() {
+  appPipeline.isEraserActive = !appPipeline.isEraserActive;
+  const btnEraser = document.getElementById('btnEraser');
+  const colorSectionBlock = document.getElementById('colorSectionBlock');
+
+  if (appPipeline.isEraserActive) {
+    btnEraser.classList.add('active-mode');
+    colorSectionBlock.style.opacity = '0.3'; 
+    colorSectionBlock.style.pointerEvents = 'none';
+  } else {
+    btnEraser.classList.remove('active-mode');
+    colorSectionBlock.style.opacity = '1';
+    colorSectionBlock.style.pointerEvents = 'auto';
+  }
+}
+
+
+// ─── System Colors Pipelines Native Trigger Matrix ───────────────────────────
 const nativeColorPicker = document.getElementById('hiddenColorPicker');
 const colorDisplayNode = document.getElementById('colorDisplayNode');
+const colorBtnText = document.getElementById('colorBtnText');
 
 nativeColorPicker.addEventListener('input', (e) => {
   const chosenHex = e.target.value;
   appPipeline.currentColor = chosenHex;
   colorDisplayNode.style.background = chosenHex;
   colorDisplayNode.style.boxShadow = `0 0 12px ${chosenHex}`;
+  colorBtnText.textContent = "Color: " + chosenHex.toUpperCase();
 });
 
-// ─── Range Sliders Synchronization Engine ─────────────────────────────────────
 function registerSliderInterface(trackId, displayId, stateKey, syntaxUnit) {
   const input = document.getElementById(trackId);
   const monitor = document.getElementById(displayId);
@@ -509,41 +431,43 @@ function registerSliderInterface(trackId, displayId, stateKey, syntaxUnit) {
 registerSliderInterface('sizeTrack', 'lblSize', 'brushSize', 'px');
 registerSliderInterface('glowTrack', 'lblGlow', 'glowSize', 'px');
 
-// ─── Core Compositing Neon Brush Calculation Layer ───────────────────────────
+
+// ─── Neon Composite & Custom Destructive Eraser Stroke Matrix ────────────────
 function renderNeonStrokeSegment(x1, y1, x2, y2, hexColor, width, glow) {
   ctx.save();
-  ctx.lineCap = 'round';
-  ctx.lineJoin = 'round';
+  ctx.lineCap = 'round'; ctx.lineJoin = 'round';
 
-  if (glow > 0) {
+  if (appPipeline.isEraserActive) {
+    ctx.globalCompositeOperation = 'destination-out';
     ctx.beginPath(); ctx.moveTo(x1, y1); ctx.lineTo(x2, y2);
-    ctx.strokeStyle = hexColor + '1a'; ctx.lineWidth = width + glow * 2.2;
-    ctx.filter = `blur(${glow * 0.55}px)`; ctx.stroke();
+    ctx.lineWidth = width * 2.5; 
+    ctx.stroke();
+  } else {
+    ctx.globalCompositeOperation = 'source-over';
+    if (glow > 0) {
+      ctx.beginPath(); ctx.moveTo(x1, y1); ctx.lineTo(x2, y2);
+      ctx.strokeStyle = hexColor + '1a'; ctx.lineWidth = width + glow * 2.2;
+      ctx.filter = `blur(${glow * 0.55}px)`; ctx.stroke();
+
+      ctx.beginPath(); ctx.moveTo(x1, y1); ctx.lineTo(x2, y2);
+      ctx.strokeStyle = hexColor + '44'; ctx.lineWidth = width + glow * 1.1;
+      ctx.filter = `blur(${glow * 0.25}px)`; ctx.stroke();
+    }
+    ctx.beginPath(); ctx.moveTo(x1, y1); ctx.lineTo(x2, y2);
+    ctx.strokeStyle = hexColor; ctx.lineWidth = width; ctx.filter = 'none';
+    ctx.shadowColor = hexColor; ctx.shadowBlur = glow * 0.8; ctx.stroke();
 
     ctx.beginPath(); ctx.moveTo(x1, y1); ctx.lineTo(x2, y2);
-    ctx.strokeStyle = hexColor + '44'; ctx.lineWidth = width + glow * 1.1;
-    ctx.filter = `blur(${glow * 0.25}px)`; ctx.stroke();
+    ctx.strokeStyle = 'rgba(255, 255, 255, 0.95)'; ctx.lineWidth = Math.max(1, width * 0.25);
+    ctx.stroke();
   }
-
-  ctx.beginPath(); ctx.moveTo(x1, y1); ctx.lineTo(x2, y2);
-  ctx.strokeStyle = hexColor; ctx.lineWidth = width; ctx.filter = 'none';
-  ctx.shadowColor = hexColor; ctx.shadowBlur = glow * 0.8; ctx.stroke();
-
-  ctx.beginPath(); ctx.moveTo(x1, y1); ctx.lineTo(x2, y2);
-  ctx.strokeStyle = 'rgba(255, 255, 255, 0.95)'; ctx.lineWidth = Math.max(1, width * 0.25);
-  ctx.shadowBlur = 0; ctx.stroke();
-  
   ctx.restore();
 }
 
-// ─── Touch Matrix Ingestion Coordination Mapping ─────────────────────────────
 function calculateTouchPoints(evt) {
   const rect = canvas.getBoundingClientRect();
   const targetNode = evt.touches[0] || evt.changedTouches[0];
-  return {
-    x: targetNode.clientX - rect.left,
-    y: targetNode.clientY - rect.top
-  };
+  return { x: targetNode.clientX - rect.left, y: targetNode.clientY - rect.top };
 }
 
 canvas.addEventListener('touchstart', (e) => {
@@ -554,40 +478,22 @@ canvas.addEventListener('touchstart', (e) => {
 canvas.addEventListener('touchmove', (e) => {
   if (appPipeline.coordX === null) return;
   const pos = calculateTouchPoints(e);
-  
-  renderNeonStrokeSegment(
-    appPipeline.coordX, appPipeline.coordY, 
-    pos.x, pos.y, 
-    appPipeline.currentColor, appPipeline.brushSize, appPipeline.glowSize
-  );
-  
+  renderNeonStrokeSegment(appPipeline.coordX, appPipeline.coordY, pos.x, pos.y, appPipeline.currentColor, appPipeline.brushSize, appPipeline.glowSize);
   appPipeline.coordX = pos.x; appPipeline.coordY = pos.y;
 });
 
-canvas.addEventListener('touchend', () => {
-  appPipeline.coordX = null; appPipeline.coordY = null;
-});
+canvas.addEventListener('touchend', () => { appPipeline.coordX = null; appPipeline.coordY = null; });
 
-// ─── File Storage Operations Functions ────────────────────────────────────────
-function clearCanvas() {
-  ctx.clearRect(0, 0, canvas.width, canvas.height);
-}
-
-document.fonts.ready.then(() => {
-  // Safe validation check inside asset engine execution stacks
-});
+function clearCanvas() { ctx.clearRect(0, 0, canvas.width, canvas.height); }
 
 function saveCanvas() {
   const triggerLink = document.createElement('a');
   const frameBuffer = document.createElement('canvas');
   frameBuffer.width = canvas.width; frameBuffer.height = canvas.height;
-  
   const fCtx = frameBuffer.getContext('2d');
-  fCtx.fillStyle = '#030307'; 
-  fCtx.fillRect(0, 0, frameBuffer.width, frameBuffer.height);
+  fCtx.fillStyle = '#030307'; fCtx.fillRect(0, 0, frameBuffer.width, frameBuffer.height);
   fCtx.drawImage(canvas, 0, 0);
-  
-  triggerLink.download = 'neon-artwork-' + Date.now() + '.png';
+  triggerLink.download = 'neon-art-production-' + Date.now() + '.png';
   triggerLink.href = frameBuffer.toDataURL();
   triggerLink.click();
 }
