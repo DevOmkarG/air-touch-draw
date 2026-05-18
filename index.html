@@ -3,985 +3,594 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
-<title>✦ AIR & TOUCH DRAW</title>
+<title>✦ NEON BRUSH STUDIO</title>
 <style>
-  @import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=Space+Mono:wght@400;700&display=swap');
+  @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;600;800&family=Space+Grotesk:wght@400;700&display=swap');
 
   :root {
-    --neon-cyan: #00fff7;
-    --neon-pink: #ff00c8;
-    --neon-green: #39ff14;
-    --dark: #050508;
-    --panel-bg: rgba(10, 10, 20, 0.85);
-    --border: rgba(0, 255, 247, 0.15);
+    --neon-cyan: #00f0ff;
+    --neon-pink: #ff007b;
+    --neon-glow: rgba(0, 240, 255, 0.4);
+    --bg-dark: #030307;
+    --surface: rgba(13, 13, 25, 0.85);
+    --border: rgba(0, 240, 255, 0.12);
+    --font-sans: 'Plus Jakarta Sans', sans-serif;
+    --font-display: 'Space Grotesk', sans-serif;
   }
 
-  /* FIX: touch-action: none ko universal se hata diya */
-  * { margin: 0; padding: 0; box-sizing: border-box; }
+  * { margin: 0; padding: 0; box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
 
   body {
-    background: var(--dark);
-    color: #fff;
-    font-family: 'Space Mono', monospace;
+    background: var(--bg-dark);
+    color: #f3f4f6;
+    font-family: var(--font-sans);
     height: 100vh;
     overflow: hidden;
-    display: flex;
-    flex-direction: column;
   }
 
-  /* Header */
+  /* Tech Grid Overlay */
+  .grid-bg {
+    position: absolute;
+    inset: 0;
+    background-image: 
+      linear-gradient(rgba(0, 240, 255, 0.015) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(0, 240, 255, 0.015) 1px, transparent 1px);
+    background-size: 30px 30px;
+    background-position: center;
+    pointer-events: none;
+    z-index: 1;
+  }
+
+  .app-screen {
+    position: absolute;
+    inset: 0;
+    display: flex;
+    flex-direction: column;
+    z-index: 5;
+    transition: all 0.5s cubic-bezier(0.16, 1, 0.3, 1);
+  }
+
+  .screen-hidden {
+    opacity: 0;
+    pointer-events: none;
+    transform: scale(1.03);
+  }
+
+  /* ─── SCREEN 1: DRAWING THEMED WELCOME SCREEN ─── */
+  #splashScreen {
+    justify-content: center;
+    align-items: center;
+    padding: 30px;
+    background: radial-gradient(circle at center, #090915 0%, var(--bg-dark) 100%);
+  }
+
+  .splash-container {
+    text-align: center;
+    z-index: 5;
+    max-width: 480px;
+    animation: fadeInUp 0.8s ease;
+  }
+
+  .splash-badge {
+    background: rgba(0, 240, 255, 0.06);
+    border: 1px solid rgba(0, 240, 255, 0.2);
+    padding: 6px 16px;
+    border-radius: 30px;
+    font-size: 0.7rem;
+    font-weight: 600;
+    letter-spacing: 0.25em;
+    color: var(--neon-cyan);
+    text-transform: uppercase;
+    display: inline-block;
+    margin-bottom: 20px;
+  }
+
+  .splash-title {
+    font-family: var(--font-display);
+    font-weight: 700;
+    font-size: 2.6rem;
+    letter-spacing: -0.02em;
+    line-height: 1.1;
+    margin-bottom: 16px;
+    background: linear-gradient(135deg, #ffffff 40%, #a5b4fc 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+  }
+
+  .splash-desc {
+    color: #9ca3af;
+    font-size: 0.9rem;
+    line-height: 1.6;
+    margin-bottom: 35px;
+    font-weight: 300;
+  }
+
+  .start-btn {
+    background: linear-gradient(135deg, var(--neon-cyan), #0072ff);
+    border: none;
+    color: #fff;
+    font-family: var(--font-display);
+    font-size: 0.9rem;
+    font-weight: 700;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    padding: 16px 36px;
+    border-radius: 12px;
+    cursor: pointer;
+    box-shadow: 0 4px 20px rgba(0, 240, 255, 0.3);
+    transition: all 0.2s ease;
+  }
+
+  .start-btn:active {
+    transform: scale(0.96);
+  }
+
+  /* ─── SCREEN 2: MAIN DRAWING STUDIO ─── */
   header {
+    height: 55px;
     display: flex;
     align-items: center;
     justify-content: space-between;
-    padding: 10px 20px;
+    padding: 0 20px;
     border-bottom: 1px solid var(--border);
-    background: var(--panel-bg);
+    background: var(--surface);
     backdrop-filter: blur(10px);
     z-index: 10;
-    flex-shrink: 0;
   }
 
-  .logo {
-    font-family: 'Orbitron', sans-serif;
-    font-weight: 900;
+  .header-logo {
+    font-family: var(--font-display);
+    font-weight: 700;
     font-size: 1.1rem;
-    letter-spacing: 0.2em;
-    background: linear-gradient(90deg, var(--neon-cyan), var(--neon-pink));
-    -webkit-background-clip: text;
-    -webkit-text-fill-color: transparent;
-    text-shadow: none;
+    letter-spacing: 0.05em;
+    color: #fff;
   }
+  .header-logo span { color: var(--neon-cyan); }
 
-  .status-badge {
+  .workspace-layout {
     display: flex;
-    align-items: center;
-    gap: 8px;
-    font-size: 0.65rem;
-    letter-spacing: 0.15em;
-    text-transform: uppercase;
-    color: rgba(255,255,255,0.5);
-  }
-
-  .status-dot {
-    width: 8px;
-    height: 8px;
-    border-radius: 50%;
-    background: #333;
-    transition: background 0.3s, box-shadow 0.3s;
-  }
-  .status-dot.active { background: var(--neon-green); box-shadow: 0 0 8px var(--neon-green); }
-  .status-dot.drawing { background: var(--neon-cyan); box-shadow: 0 0 8px var(--neon-cyan); animation: pulse 0.8s infinite; }
-  .status-dot.erasing { background: var(--neon-pink); box-shadow: 0 0 8px var(--neon-pink); }
-  .status-dot.paused { background: #ff9500; box-shadow: 0 0 8px #ff9500; }
-
-  @keyframes pulse { 0%,100%{opacity:1} 50%{opacity:0.4} }
-
-  /* Main layout */
-  .main {
-    display: flex;
+    flex-direction: column;
     flex: 1;
     min-height: 0;
   }
 
-  /* Canvas area */
-  .canvas-area {
+  .canvas-wrapper {
     position: relative;
     flex: 1;
     background: #000;
-    overflow: hidden;
+    min-height: 0;
   }
 
-  /* FIX: touch-action: none ko sirf drawCanvas par apply kiya taaki drawing karte waqt page scroll na ho */
   #drawCanvas {
     position: absolute;
     inset: 0;
     width: 100%;
     height: 100%;
-    touch-action: none; 
+    touch-action: none;
   }
 
-  #webcamCanvas {
+  .floating-clear-trigger {
     position: absolute;
-    inset: 0;
-    width: 100%;
-    height: 100%;
-    opacity: 0;
-    pointer-events: none;
-  }
-
-  /* Finger cursor */
-  #cursor {
-    position: absolute;
-    width: 20px;
-    height: 20px;
-    border-radius: 50%;
-    pointer-events: none;
-    transform: translate(-50%, -50%);
-    z-index: 5;
-    transition: transform 0.01s;
-    display: none;
-  }
-
-  /* HUD Overlays */
-  .hud-container {
-    position: absolute;
-    top: 16px;
-    left: 50%;
-    transform: translateX(-50%);
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    gap: 8px;
-    z-index: 10;
-    pointer-events: none;
-  }
-
-  .gesture-overlay {
-    background: rgba(0,0,0,0.7);
-    border: 1px solid var(--border);
-    border-radius: 30px;
-    padding: 8px 20px;
+    top: 12px;
+    right: 12px;
+    z-index: 15;
+    background: rgba(255, 0, 123, 0.15);
+    border: 1px solid rgba(255, 0, 123, 0.4);
+    color: #ff007b;
+    padding: 8px 14px;
+    font-family: var(--font-display);
     font-size: 0.7rem;
-    letter-spacing: 0.15em;
+    font-weight: 700;
     text-transform: uppercase;
+    border-radius: 30px;
+    cursor: pointer;
     backdrop-filter: blur(8px);
-    white-space: nowrap;
-  }
-
-  .gesture-overlay span { color: var(--neon-cyan); }
-
-  .debug-overlay {
-    background: rgba(5, 5, 10, 0.8);
-    border: 1px solid rgba(255, 255, 255, 0.05);
-    border-radius: 6px;
-    padding: 4px 10px;
-    font-size: 0.55rem;
-    letter-spacing: 0.1em;
-    color: rgba(255,255,255,0.4);
-    font-family: 'Space Mono', monospace;
-    white-space: nowrap;
-  }
-  .debug-overlay span { color: var(--neon-green); }
-
-  /* Loading screen */
-  #loadingScreen {
-    position: absolute;
-    inset: 0;
-    background: var(--dark);
     display: flex;
-    flex-direction: column;
     align-items: center;
-    justify-content: center;
-    gap: 20px;
-    z-index: 20;
-  }
-
-  .loading-logo {
-    font-family: 'Orbitron', sans-serif;
-    font-weight: 900;
-    font-size: 2.5rem;
-    letter-spacing: 0.3em;
-    background: linear-gradient(90deg, var(--neon-cyan), var(--neon-pink), var(--neon-cyan));
-    background-size: 200%;
-    -webkit-background-clip: text;
-    -webkit-text-fill-color: transparent;
-    animation: shimmer 2s linear infinite;
-  }
-
-  @keyframes shimmer { 0%{background-position:0%} 100%{background-position:200%} }
-
-  .loading-bar-wrap {
-    width: 240px;
-    height: 3px;
-    background: rgba(255,255,255,0.1);
-    border-radius: 2px;
-    overflow: hidden;
-  }
-
-  .loading-bar {
-    height: 100%;
-    background: linear-gradient(90deg, var(--neon-cyan), var(--neon-pink));
-    width: 0%;
-    transition: width 0.4s;
-    box-shadow: 0 0 10px var(--neon-cyan);
-  }
-
-  .loading-text {
-    font-size: 0.65rem;
-    letter-spacing: 0.2em;
-    text-transform: uppercase;
-    color: rgba(255,255,255,0.4);
-  }
-
-  /* Side panel */
-  .panel {
-    width: 220px;
-    flex-shrink: 0;
-    background: var(--panel-bg);
-    border-left: 1px solid var(--border);
-    backdrop-filter: blur(10px);
-    display: flex;
-    flex-direction: column;
-    gap: 0;
-    overflow-y: auto;
-    scrollbar-width: none;
-  }
-  .panel::-webkit-scrollbar { display: none; }
-
-  .panel-section {
-    padding: 16px;
-    border-bottom: 1px solid var(--border);
-  }
-
-  .panel-label {
-    font-size: 0.6rem;
-    letter-spacing: 0.2em;
-    text-transform: uppercase;
-    color: rgba(255,255,255,0.3);
-    margin-bottom: 12px;
-  }
-
-  /* Color picker */
-  .color-swatches {
-    display: grid;
-    grid-template-columns: repeat(5, 1fr);
     gap: 6px;
-    margin-bottom: 10px;
+    box-shadow: 0 0 10px rgba(255, 0, 123, 0.1);
   }
 
-  .swatch {
-    aspect-ratio: 1;
-    border-radius: 50%;
-    cursor: pointer;
-    border: 2px solid transparent;
-    transition: transform 0.15s, border-color 0.15s, box-shadow 0.15s;
+  .floating-clear-trigger:active {
+    background: var(--neon-pink);
+    color: #fff;
+  }
+
+  /* ─── CONTROLS BOTTOM PANEL ─── */
+  .control-dock {
+    background: var(--surface);
+    border-top: 1px solid var(--border);
+    backdrop-filter: blur(20px);
+    padding: 16px 20px;
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+    z-index: 10;
+  }
+
+  .dock-section {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+  }
+
+  .dock-label {
+    font-size: 0.6rem;
+    font-weight: 700;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: #6b7280;
+  }
+
+  /* Trigger Button to Open Universal System Color Grid */
+  .color-selector-wrapper {
     position: relative;
+    width: 100%;
   }
 
-  .swatch:hover { transform: scale(1.15); }
-  .swatch.active {
-    border-color: rgba(255,255,255,0.8);
-    box-shadow: 0 0 12px currentColor;
-    transform: scale(1.1);
-  }
-
-  .custom-color-wrap {
+  .color-trigger-btn {
+    width: 100%;
+    padding: 12px;
+    background: rgba(255, 255, 255, 0.03);
+    border: 1px solid var(--border);
+    border-radius: 10px;
     display: flex;
     align-items: center;
-    gap: 8px;
-    margin-top: 8px;
-  }
-
-  .custom-color-wrap label {
-    font-size: 0.6rem;
-    letter-spacing: 0.1em;
-    color: rgba(255,255,255,0.4);
-    text-transform: uppercase;
-  }
-
-  #colorPicker {
-    width: 32px;
-    height: 24px;
-    border: none;
-    border-radius: 4px;
+    justify-content: space-between;
     cursor: pointer;
-    background: none;
-    padding: 0;
+    transition: all 0.2s ease;
+  }
+  
+  .color-trigger-btn:active {
+    background: rgba(0, 240, 255, 0.05);
   }
 
-  /* Sliders */
-  .slider-row {
+  .color-preview-group {
     display: flex;
     align-items: center;
     gap: 10px;
-    margin-bottom: 8px;
   }
 
-  .slider-row label {
-    font-size: 0.6rem;
-    letter-spacing: 0.1em;
-    text-transform: uppercase;
-    color: rgba(255,255,255,0.35);
-    width: 60px;
-    flex-shrink: 0;
+  .current-color-dot {
+    width: 20px;
+    height: 20px;
+    border-radius: 50%;
+    background: #00f0ff;
+    box-shadow: 0 0 10px var(--neon-cyan);
+    border: 1px solid rgba(255,255,255,0.5);
+    transition: background 0.2s;
   }
 
-  .slider-val {
-    font-size: 0.65rem;
-    color: var(--neon-cyan);
-    width: 28px;
-    text-align: right;
-    flex-shrink: 0;
+  .color-btn-text {
+    font-size: 0.75rem;
+    font-weight: 600;
+    color: #e5e7eb;
   }
+
+  #hiddenColorPicker {
+    position: absolute;
+    inset: 0;
+    opacity: 0;
+    width: 100%;
+    height: 100%;
+    cursor: pointer;
+  }
+
+  /* Sliders Setup */
+  .sliders-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 12px;
+  }
+
+  .slider-card {
+    background: rgba(255, 255, 255, 0.02);
+    border: 1px solid rgba(255, 255, 255, 0.04);
+    border-radius: 8px;
+    padding: 8px 10px;
+  }
+
+  .slider-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 4px;
+  }
+  .slider-name { font-size: 0.58rem; text-transform: uppercase; color: #9ca3af; }
+  .slider-monitor { font-size: 0.62rem; font-weight: 700; color: var(--neon-cyan); }
 
   input[type=range] {
     -webkit-appearance: none;
-    flex: 1;
+    width: 100%;
     height: 3px;
-    background: rgba(255,255,255,0.1);
+    background: rgba(255, 255, 255, 0.08);
     border-radius: 2px;
     outline: none;
   }
   input[type=range]::-webkit-slider-thumb {
     -webkit-appearance: none;
-    width: 14px;
-    height: 14px;
+    width: 12px;
+    height: 12px;
     border-radius: 50%;
-    background: var(--neon-cyan);
-    box-shadow: 0 0 8px var(--neon-cyan);
-    cursor: pointer;
-    transition: box-shadow 0.2s;
-  }
-  input[type=range]::-webkit-slider-thumb:hover {
-    box-shadow: 0 0 14px var(--neon-cyan), 0 0 24px var(--neon-cyan);
+    background: #fff;
+    box-shadow: 0 0 6px var(--neon-cyan);
   }
 
-  /* Gesture guide */
-  .gesture-guide {
+  /* Export Button Action */
+  .action-deck-row {
     display: flex;
-    flex-direction: column;
-    gap: 8px;
   }
 
-  .gesture-item {
-    display: flex;
-    align-items: center;
-    gap: 10px;
-    padding: 8px 10px;
-    background: rgba(255,255,255,0.03);
-    border-radius: 8px;
-    border: 1px solid rgba(255,255,255,0.05);
-    transition: border-color 0.3s, background 0.3s;
-  }
-
-  .gesture-item.active-gesture {
-    border-color: var(--neon-cyan);
-    background: rgba(0,255,247,0.05);
-  }
-
-  .gesture-icon {
-    font-size: 1.3rem;
-    width: 28px;
-    text-align: center;
-  }
-
-  .gesture-desc {
-    display: flex;
-    flex-direction: column;
-    gap: 1px;
-  }
-
-  .gesture-name {
-    font-size: 0.6rem;
-    letter-spacing: 0.1em;
-    text-transform: uppercase;
-    color: rgba(255,255,255,0.7);
-  }
-
-  .gesture-action {
-    font-size: 0.55rem;
-    color: rgba(255,255,255,0.3);
-  }
-
-  /* Buttons */
-  .btn-row {
-    display: flex;
-    gap: 8px;
-  }
-
-  .btn {
-    flex: 1;
-    padding: 8px 0;
-    border: 1px solid var(--border);
-    background: rgba(255,255,255,0.04);
-    color: rgba(255,255,255,0.6);
-    font-family: 'Space Mono', monospace;
-    font-size: 0.6rem;
-    letter-spacing: 0.1em;
-    text-transform: uppercase;
-    border-radius: 6px;
-    cursor: pointer;
-    transition: background 0.2s, color 0.2s, border-color 0.2s, box-shadow 0.2s;
-  }
-  .btn:hover {
-    background: rgba(0,255,247,0.08);
-    border-color: var(--neon-cyan);
+  .action-btn {
+    width: 100%;
+    padding: 12px 0;
+    border: 1px solid rgba(0, 240, 255, 0.2);
+    background: rgba(0, 240, 255, 0.03);
     color: var(--neon-cyan);
-    box-shadow: 0 0 10px rgba(0,255,247,0.1);
+    font-family: var(--font-display);
+    font-weight: 700;
+    font-size: 0.75rem;
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+    border-radius: 8px;
+    cursor: pointer;
   }
-  .btn.danger:hover {
-    background: rgba(255,0,200,0.08);
-    border-color: var(--neon-pink);
-    color: var(--neon-pink);
-    box-shadow: 0 0 10px rgba(255,0,200,0.1);
+  .action-btn:active {
+    background: var(--neon-cyan);
+    color: #000;
   }
 
-  /* Responsive layout tweaks for mobile view */
+  /* ─── MOBILE RESPONSIVE STRUCTURES (MAX SPACE ALLOCATION) ─── */
   @media(max-width: 768px) {
-    body { height: 100vh; overflow: hidden; } /* Lock body to avoid bouncing */
-    .main { flex-direction: column; height: calc(100vh - 45px); }
-    .canvas-area { width: 100%; height: 55vh; min-height: 350px; }
+    body { height: 100vh; overflow: hidden; } 
+    .main { flex-direction: column; height: calc(100vh - 55px); }
     
-    /* FIX: Panel scroll tracking properties enhanced */
-    .panel { 
+    /* CRITICAL CHANGE: Drawing Canvas gets 80% Height Space allocation */
+    .canvas-wrapper { width: 100%; height: 80vh; flex-shrink: 0; }
+    
+    /* Clean, non-scrollable control bar perfectly fitted into 20% viewport space */
+    .control-dock { 
       width: 100%; 
-      flex: 1;
+      flex: 1; 
       border-left: none; 
-      border-top: 1px solid var(--border); 
-      overflow-y: scroll; 
-      -webkit-overflow-scrolling: touch; 
+      padding: 12px 16px;
+      gap: 10px;
+      overflow: hidden;
     }
-    .preview-wrap { display: none; }
-    .panel-section:first-child { display: none; } 
+    .slider-card { padding: 6px 8px; }
   }
 
-  /* Glow effect */
-  .glow-overlay {
-    position: absolute;
-    inset: 0;
-    pointer-events: none;
-    background:
-      radial-gradient(ellipse 60% 40% at 20% 80%, rgba(0,255,247,0.03) 0%, transparent 70%),
-      radial-gradient(ellipse 40% 60% at 80% 20%, rgba(255,0,200,0.03) 0%, transparent 70%);
+  @keyframes fadeInUp {
+    from { opacity: 0; transform: translateY(15px); }
+    to { opacity: 1; transform: translateY(0); }
   }
+
+  .ambient-blur {
+    position: absolute;
+    width: 200px;
+    height: 200px;
+    background: radial-gradient(circle, var(--neon-glow) 0%, transparent 70%);
+    filter: blur(40px);
+    pointer-events: none;
+    z-index: 2;
+    opacity: 0.3;
+  }
+  .blur-top { top: -40px; right: -40px; }
+  .blur-bottom { bottom: -40px; left: -40px; }
 </style>
 </head>
 <body>
 
-<header>
-  <div class="logo">✦ AIR DRAW</div>
-  <div class="status-badge">
-    <div class="status-dot" id="statusDot"></div>
-    <span id="statusText">INITIALIZING</span>
-  </div>
-</header>
+  <div class="grid-bg"></div>
+  <div class="ambient-blur blur-top"></div>
+  <div class="ambient-blur blur-bottom"></div>
 
-<div class="main">
-  <div class="canvas-area">
-    <canvas id="drawCanvas"></canvas>
-    <canvas id="webcamCanvas"></canvas>
-    <div id="cursor"></div>
-    
-    <div class="hud-container">
-      <div class="debug-overlay" id="debugReadout">Mode: Detecting Device...</div>
-      <div class="gesture-overlay">Gesture/Input: <span id="gestureLabel">—</span></div>
-    </div>
-    
-    <div class="glow-overlay"></div>
-
-    <div id="loadingScreen">
-      <div class="loading-logo">AIR DRAW</div>
-      <div class="loading-bar-wrap"><div class="loading-bar" id="loadingBar"></div></div>
-      <div class="loading-text" id="loadingMsg">Initializing Canvas App…</div>
+  <div class="app-screen" id="splashScreen">
+    <div class="splash-container">
+      <div class="splash-badge">Creative Studio</div>
+      <h1 class="splash-title">Neon Brush Canvas</h1>
+      <p class="splash-desc">Unleash your imagination on a next-gen glowing workspace. Draw high-fidelity vibrant neon strokes smoothly with responsive, tailored touch vector parameters.</p>
+      <button class="start-btn" onclick="enterWorkspace()">Start Drawing</button>
     </div>
   </div>
 
-  <div class="panel">
-    <div class="panel-section">
-      <div class="panel-label">Camera</div>
-      <div class="preview-wrap">
-        <video id="previewVideo" autoplay muted playsinline></video>
-        <div class="preview-overlay" id="previewMsg">Starting…</div>
+  <div class="app-screen screen-hidden" id="workspaceScreen">
+    <header>
+      <div class="header-logo">NEON<span>BRUSH</span></div>
+      <div class="status-badge">
+        <div class="status-dot"></div>
       </div>
-    </div>
+    </header>
 
-    <div class="panel-section">
-      <div class="panel-label">Color</div>
-      <div class="color-swatches" id="swatches"></div>
-      <div class="custom-color-wrap">
-        <label>Custom</label>
-        <input type="color" id="colorPicker" value="#00fff7">
+    <div class="workspace-layout">
+      <div class="canvas-wrapper">
+        <button class="floating-clear-trigger" onclick="clearCanvas()">
+          <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M3 6h18M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg>
+          Clear
+        </button>
+        <canvas id="drawCanvas"></canvas>
       </div>
-    </div>
 
-    <div class="panel-section">
-      <div class="panel-label">Brush</div>
-      <div class="slider-row">
-        <label>Size</label>
-        <input type="range" id="brushSize" min="2" max="40" value="8">
-        <div class="slider-val" id="brushSizeVal">8</div>
-      </div>
-      <div class="slider-row">
-        <label>Glow</label>
-        <input type="range" id="glowSize" min="0" max="60" value="20">
-        <div class="slider-val" id="glowSizeVal">20</div>
-      </div>
-      <div class="slider-row">
-        <label>Fade</label>
-        <input type="range" id="fadeRate" min="0" max="20" value="0">
-        <div class="slider-val" id="fadeRateVal">0</div>
-      </div>
-    </div>
-
-    <div class="panel-section">
-      <div class="panel-label">Controls Guide</div>
-      <div class="gesture-guide">
-        <div class="gesture-item" id="g-draw">
-          <div class="gesture-icon">☝️</div>
-          <div class="gesture-desc">
-            <div class="gesture-name">Draw</div>
-            <div class="gesture-action">Index finger UP / Touch & Drag</div>
+      <div class="control-dock">
+        <div class="dock-section">
+          <div class="dock-label">Brush Color Pipeline</div>
+          <div class="color-selector-wrapper">
+            <div class="color-trigger-btn">
+              <div class="color-preview-group">
+                <div class="current-color-dot" id="colorDisplayNode"></div>
+                <span class="color-btn-text">Choose Custom Color...</span>
+              </div>
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#6b7280" stroke-width="2"><path d="M6 9l6 6 6-6"/></svg>
+            </div>
+            <input type="color" id="hiddenColorPicker" value="#00f0ff">
           </div>
         </div>
-        <div class="gesture-item" id="g-erase">
-          <div class="gesture-icon">🖐️</div>
-          <div class="gesture-desc">
-            <div class="gesture-name">Erase Mode</div>
-            <div class="gesture-action">Open palm (Webcam only)</div>
-          </div>
-        </div>
-        <div class="gesture-item" id="g-pause">
-          <div class="gesture-icon">✊</div>
-          <div class="gesture-desc">
-            <div class="gesture-name">Pause</div>
-            <div class="gesture-action">Closed fist (Webcam only)</div>
-          </div>
-        </div>
-      </div>
-    </div>
 
-    <div class="panel-section">
-      <div class="panel-label">Actions</div>
-      <div class="btn-row">
-        <button class="btn" onclick="saveCanvas()">Save</button>
-        <button class="btn danger" onclick="clearCanvas()">Clear</button>
+        <div class="sliders-grid">
+          <div class="slider-card">
+            <div class="slider-header">
+              <span class="slider-name">Size</span>
+              <span class="slider-monitor" id="lblSize">8px</span>
+            </div>
+            <input type="range" id="sizeTrack" min="2" max="35" value="8">
+          </div>
+
+          <div class="slider-card">
+            <div class="slider-header">
+              <span class="slider-name">Glow</span>
+              <span class="slider-monitor" id="lblGlow">20px</span>
+            </div>
+            <input type="range" id="glowTrack" min="0" max="50" value="20">
+          </div>
+        </div>
+
+        <div class="action-deck-row">
+          <button class="action-btn" onclick="saveCanvas()">Save Artwork PNG</button>
+        </div>
       </div>
     </div>
   </div>
-</div>
-
-<script src="https://cdn.jsdelivr.net/npm/@mediapipe/camera_utils/camera_utils.js" crossorigin="anonymous"></script>
-<script src="https://cdn.jsdelivr.net/npm/@mediapipe/control_utils/control_utils.js" crossorigin="anonymous"></script>
-<script src="https://cdn.jsdelivr.net/npm/@mediapipe/hands/hands.js" crossorigin="anonymous"></script>
 
 <script>
-// ─── App Global Context State ────────────────────────────────────────────────
-const state = {
-  color: '#00fff7',
+// ─── Global State Architecture Mapping ───────────────────────────────────────
+const appPipeline = {
+  currentColor: '#00f0ff',
   brushSize: 8,
   glowSize: 20,
-  fadeRate: 0,
-  gesture: 'none', 
-  lastX: null,
-  lastY: null,
-  isDrawing: false,
-  isTouchActive: false, 
+  coordX: null,
+  coordY: null
 };
 
-// ─── Canvas Render Components Setup ──────────────────────────────────────────
-const drawCanvas = document.getElementById('drawCanvas');
-const ctx = drawCanvas.getContext('2d');
-const webcamCanvas = document.getElementById('webcamCanvas');
-const wctx = webcamCanvas.getContext('2d');
-
-function resizeCanvases() {
-  const area = drawCanvas.parentElement;
-  const w = area.clientWidth, h = area.clientHeight;
-  
-  const tempCanvas = document.createElement('canvas');
-  tempCanvas.width = drawCanvas.width; tempCanvas.height = drawCanvas.height;
-  const tCtx = tempCanvas.getContext('2d');
-  if(drawCanvas.width > 0 && drawCanvas.height > 0) {
-    tCtx.drawImage(drawCanvas, 0, 0);
-  }
-
-  drawCanvas.width = w; drawCanvas.height = h;
-  webcamCanvas.width = w; webcamCanvas.height = h;
-  
-  ctx.drawImage(tempCanvas, 0, 0);
-}
-resizeCanvases();
-window.addEventListener('resize', () => setTimeout(resizeCanvases, 100));
-
-// ─── Colors Swatches Rendering engine ────────────────────────────────────────
-const PALETTE = [
-  '#00fff7','#ff00c8','#39ff14','#ff6600','#ffffff',
-  '#ffd700','#7b2fff','#ff4466','#00b4ff','#ff99cc'
-];
-
-const swatchesEl = document.getElementById('swatches');
-PALETTE.forEach((c, i) => {
-  const s = document.createElement('div');
-  s.className = 'swatch' + (i === 0 ? ' active' : '');
-  s.style.background = c;
-  s.style.boxShadow = `0 0 6px ${c}`;
-  s.title = c;
-  s.onclick = () => setColor(c, s);
-  swatchesEl.appendChild(s);
-});
-
-function setColor(c, el) {
-  state.color = c;
-  document.getElementById('colorPicker').value = c;
-  document.querySelectorAll('.swatch').forEach(s => s.classList.remove('active'));
-  if (el) el.classList.add('active');
-  updateCursor();
+// ─── Workspace Initializer Operations Triggers ───────────────────────────────
+function enterWorkspace() {
+  document.getElementById('splashScreen').classList.add('screen-hidden');
+  document.getElementById('workspaceScreen').classList.remove('screen-hidden');
+  setTimeout(executeCanvasSizingRoutine, 150);
 }
 
-document.getElementById('colorPicker').addEventListener('input', e => {
-  setColor(e.target.value, null);
-  document.querySelectorAll('.swatch').forEach(s => s.classList.remove('active'));
+// ─── Resolution Calibration Setup Matrices ───────────────────────────────────
+const canvas = document.getElementById('drawCanvas');
+const ctx = canvas.getContext('2d');
+
+function executeCanvasSizingRoutine() {
+  const boundingArea = canvas.parentElement;
+  const w = boundingArea.clientWidth, h = boundingArea.clientHeight;
+
+  const memCache = document.createElement('canvas');
+  memCache.width = canvas.width; memCache.height = canvas.height;
+  const mCtx = memCache.getContext('2d');
+  if(canvas.width > 0 && canvas.height > 0) mCtx.drawImage(canvas, 0, 0);
+
+  canvas.width = w; canvas.height = h;
+  ctx.drawImage(memCache, 0, 0);
+}
+window.addEventListener('resize', () => setTimeout(executeCanvasSizingRoutine, 100));
+
+// ─── Universal Color Picker Matrix System Event Receivers ────────────────────
+const nativeColorPicker = document.getElementById('hiddenColorPicker');
+const colorDisplayNode = document.getElementById('colorDisplayNode');
+
+nativeColorPicker.addEventListener('input', (e) => {
+  const chosenHex = e.target.value;
+  appPipeline.currentColor = chosenHex;
+  colorDisplayNode.style.background = chosenHex;
+  colorDisplayNode.style.boxShadow = `0 0 12px ${chosenHex}`;
 });
 
-// ─── Sliders Component Logic ─────────────────────────────────────────────────
-function bindSlider(id, valId, key) {
-  const el = document.getElementById(id);
-  const valEl = document.getElementById(valId);
-  el.addEventListener('input', () => {
-    state[key] = parseInt(el.value);
-    valEl.textContent = el.value;
-    if (key === 'brushSize') updateCursor();
+// ─── Range Sliders Synchronization Engine ─────────────────────────────────────
+function registerSliderInterface(trackId, displayId, stateKey, syntaxUnit) {
+  const input = document.getElementById(trackId);
+  const monitor = document.getElementById(displayId);
+  input.addEventListener('input', () => {
+    appPipeline[stateKey] = parseInt(input.value);
+    monitor.textContent = input.value + syntaxUnit;
   });
 }
-bindSlider('brushSize', 'brushSizeVal', 'brushSize');
-bindSlider('glowSize', 'glowSizeVal', 'glowSize');
-bindSlider('fadeRate', 'fadeRateVal', 'fadeRate');
+registerSliderInterface('sizeTrack', 'lblSize', 'brushSize', 'px');
+registerSliderInterface('glowTrack', 'lblGlow', 'glowSize', 'px');
 
-// ─── Cursor Glow Indicator Styling ───────────────────────────────────────────
-const cursor = document.getElementById('cursor');
-function updateCursor() {
-  const s = state.brushSize * 2;
-  cursor.style.width = s + 'px';
-  cursor.style.height = s + 'px';
-  cursor.style.background = state.color + '44';
-  cursor.style.border = `2px solid ${state.color}`;
-  cursor.style.boxShadow = `0 0 ${state.glowSize}px ${state.color}, 0 0 ${state.glowSize * 2}px ${state.color}40`;
-}
-updateCursor();
-
-// ─── Core Drawing Brush Engine ───────────────────────────────────────────────
-function drawSegment(x1, y1, x2, y2, color, size, glow) {
+// ─── Core Compositing Neon Brush Calculation Layer ───────────────────────────
+function renderNeonStrokeSegment(x1, y1, x2, y2, hexColor, width, glow) {
   ctx.save();
   ctx.lineCap = 'round';
   ctx.lineJoin = 'round';
 
   if (glow > 0) {
-    ctx.beginPath();
-    ctx.moveTo(x1, y1);
-    ctx.lineTo(x2, y2);
-    ctx.strokeStyle = color + '33';
-    ctx.lineWidth = size + glow * 2;
-    ctx.filter = `blur(${glow * 0.6}px)`;
-    ctx.stroke();
+    ctx.beginPath(); ctx.moveTo(x1, y1); ctx.lineTo(x2, y2);
+    ctx.strokeStyle = hexColor + '1a'; ctx.lineWidth = width + glow * 2.2;
+    ctx.filter = `blur(${glow * 0.55}px)`; ctx.stroke();
 
-    ctx.beginPath();
-    ctx.moveTo(x1, y1);
-    ctx.lineTo(x2, y2);
-    ctx.strokeStyle = color + '66';
-    ctx.lineWidth = size + glow;
-    ctx.filter = `blur(${glow * 0.3}px)`;
-    ctx.stroke();
+    ctx.beginPath(); ctx.moveTo(x1, y1); ctx.lineTo(x2, y2);
+    ctx.strokeStyle = hexColor + '44'; ctx.lineWidth = width + glow * 1.1;
+    ctx.filter = `blur(${glow * 0.25}px)`; ctx.stroke();
   }
 
-  ctx.beginPath();
-  ctx.moveTo(x1, y1);
-  ctx.lineTo(x2, y2);
-  ctx.strokeStyle = color;
-  ctx.lineWidth = size;
-  ctx.filter = 'none';
-  ctx.shadowColor = color;
-  ctx.shadowBlur = glow;
-  ctx.stroke();
+  ctx.beginPath(); ctx.moveTo(x1, y1); ctx.lineTo(x2, y2);
+  ctx.strokeStyle = hexColor; ctx.lineWidth = width; ctx.filter = 'none';
+  ctx.shadowColor = hexColor; ctx.shadowBlur = glow * 0.8; ctx.stroke();
 
-  ctx.beginPath();
-  ctx.moveTo(x1, y1);
-  ctx.lineTo(x2, y2);
-  ctx.strokeStyle = '#ffffff99';
-  ctx.lineWidth = Math.max(1, size * 0.3);
-  ctx.shadowBlur = 0;
-  ctx.stroke();
-
+  ctx.beginPath(); ctx.moveTo(x1, y1); ctx.lineTo(x2, y2);
+  ctx.strokeStyle = 'rgba(255, 255, 255, 0.95)'; ctx.lineWidth = Math.max(1, width * 0.25);
+  ctx.shadowBlur = 0; ctx.stroke();
+  
   ctx.restore();
 }
 
-// ─── Trail Fade Simulation Loop ─────────────────────────────────────────────
-let lastFadeTime = 0;
-function fadeLoop(ts) {
-  if (state.fadeRate > 0 && ts - lastFadeTime > 40) {
-    ctx.save();
-    ctx.globalCompositeOperation = 'destination-out';
-    ctx.fillStyle = `rgba(0,0,0,${state.fadeRate * 0.003})`;
-    ctx.fillRect(0, 0, drawCanvas.width, drawCanvas.height);
-    ctx.restore();
-    lastFadeTime = ts;
-  }
-  requestAnimationFrame(fadeLoop);
-}
-requestAnimationFrame(fadeLoop);
-
-// ─── Mobile Touch Coordination Logic ─────────────────────────────────────────
-function getTouchPos(e) {
-  const rect = drawCanvas.getBoundingClientRect();
-  const touch = e.touches[0] || e.changedTouches[0];
+// ─── Touch Matrix Ingestion Coordination Mapping ─────────────────────────────
+function calculateTouchPoints(evt) {
+  const rect = canvas.getBoundingClientRect();
+  const targetNode = evt.touches[0] || evt.changedTouches[0];
   return {
-    x: touch.clientX - rect.left,
-    y: touch.clientY - rect.top
+    x: targetNode.clientX - rect.left,
+    y: targetNode.clientY - rect.top
   };
 }
 
-drawCanvas.addEventListener('touchstart', (e) => {
-  state.isTouchActive = true;
-  const pos = getTouchPos(e);
-  state.lastX = pos.x;
-  state.lastY = pos.y;
-  
-  cursor.style.display = 'block';
-  cursor.style.left = pos.x + 'px';
-  cursor.style.top = pos.y + 'px';
-  updateCursor();
-  
-  document.getElementById('debugReadout').textContent = "Mode: Active Mobile Touch";
-  updateGestureUI('draw');
+canvas.addEventListener('touchstart', (e) => {
+  const pos = calculateTouchPoints(e);
+  appPipeline.coordX = pos.x; appPipeline.coordY = pos.y;
 });
 
-drawCanvas.addEventListener('touchmove', (e) => {
-  if (!state.lastX) return;
-  const pos = getTouchPos(e);
+canvas.addEventListener('touchmove', (e) => {
+  if (appPipeline.coordX === null) return;
+  const pos = calculateTouchPoints(e);
   
-  cursor.style.left = pos.x + 'px';
-  cursor.style.top = pos.y + 'px';
+  renderNeonStrokeSegment(
+    appPipeline.coordX, appPipeline.coordY, 
+    pos.x, pos.y, 
+    appPipeline.currentColor, appPipeline.brushSize, appPipeline.glowSize
+  );
   
-  drawSegment(state.lastX, state.lastY, pos.x, pos.y, state.color, state.brushSize, state.glowSize);
-  state.lastX = pos.x;
-  state.lastY = pos.y;
+  appPipeline.coordX = pos.x; appPipeline.coordY = pos.y;
 });
 
-drawCanvas.addEventListener('touchend', (e) => {
-  state.lastX = null;
-  state.lastY = null;
-  cursor.style.display = 'none';
-  updateGestureUI('none');
+canvas.addEventListener('touchend', () => {
+  appPipeline.coordX = null; appPipeline.coordY = null;
 });
 
-
-// ─── MediaPipe Geometric Hand Mathematical Evaluators ──────────────────────
-function dist(a, b) {
-  return Math.hypot(a.x - b.x, a.y - b.y, (a.z || 0) - (b.z || 0));
-}
-
-function getExtendedFingers(landmarks) {
-  const wrist = landmarks[0];
-  const fingers = [
-    { name: 'index',  tip: 8,  pip: 6 },
-    { name: 'middle', tip: 12, pip: 10 },
-    { name: 'ring',   tip: 16, pip: 14 },
-    { name: 'pinky',  tip: 20, pip: 18 }
-  ];
-
-  const extended = fingers.map(f => {
-    return dist(wrist, landmarks[f.tip]) > dist(wrist, landmarks[f.pip]) * 1.08;
-  });
-
-  const thumbTip = landmarks[4];
-  const thumbIP = landmarks[3];
-  const pinkyMCP = landmarks[17];
-  const thumbExtended = dist(thumbTip, pinkyMCP) > dist(thumbIP, pinkyMCP) * 1.1;
-
-  return { extended, thumbExtended };
-}
-
-function classifyGesture(landmarks) {
-  const { extended, thumbExtended } = getExtendedFingers(landmarks);
-  const [idx, mid, ring, pinky] = extended;
-  const fingerCount = extended.filter(Boolean).length + (thumbExtended ? 1 : 0);
-
-  if (!state.isTouchActive) {
-    document.getElementById('debugReadout').innerHTML = 
-      `Fingers: T:${thumbExtended?1:0} | I:${idx?1:0} | M:${mid?1:0} | R:${ring?1:0} | P:${pinky?1:0}`;
-  }
-
-  if (fingerCount === 0) return 'pause';
-  if (fingerCount >= 4) return 'erase';
-  if (idx && !mid && !ring && !pinky) return 'draw';
-  
-  return 'none';
-}
-
-// ─── Active Interface Realtime Synchronization ──────────────────────────────
-const gestureItems = { draw: 'g-draw', erase: 'g-erase', pause: 'g-pause' };
-const gestureLabel = document.getElementById('gestureLabel');
-const statusDot = document.getElementById('statusDot');
-const statusText = document.getElementById('statusText');
-
-const GESTURE_NAMES = { draw: '☝️ Draw/Touch', erase: '🖐️ Erase', pause: '✊ Pause', none: '—' };
-
-function updateGestureUI(g) {
-  gestureLabel.textContent = GESTURE_NAMES[g] || '—';
-  Object.entries(gestureItems).forEach(([key, id]) => {
-    const el = document.getElementById(id);
-    if(el) el.classList.toggle('active-gesture', key === g);
-  });
-  statusDot.className = 'status-dot';
-  if (g === 'draw') { statusDot.classList.add('drawing'); statusText.textContent = 'DRAWING'; }
-  else if (g === 'erase') { statusDot.classList.add('erasing'); statusText.textContent = 'ERASING'; }
-  else if (g === 'pause') { statusDot.classList.add('paused'); statusText.textContent = 'PAUSED'; }
-  else { statusDot.classList.add('active'); statusText.textContent = 'TRACKING'; }
-}
-
-// ─── Camera Ingestion Handlers ───────────────────────────────────────────────
-const videoEl = document.createElement('video');
-videoEl.setAttribute('playsinline', '');
-
-let currentGesture = 'none';
-let gestureBuffer = [];
-const BUFFER_SIZE = 6;
-
-function onResults(results) {
-  if (state.isTouchActive) return; 
-
-  const W = drawCanvas.width, H = drawCanvas.height;
-
-  if (!results.multiHandLandmarks || results.multiHandLandmarks.length === 0) {
-    cursor.style.display = 'none';
-    document.getElementById('debugReadout').textContent = "Mode: Air Cam | No Hand";
-    if (currentGesture !== 'none') {
-      currentGesture = 'none';
-      state.lastX = null; state.lastY = null;
-      updateGestureUI('none');
-    }
-    return;
-  }
-
-  const hand = results.multiHandLandmarks[0];
-  const tip = hand[8];
-
-  const x = (1 - tip.x) * W;
-  const y = tip.y * H;
-
-  const g = classifyGesture(hand);
-  gestureBuffer.push(g);
-  if (gestureBuffer.length > BUFFER_SIZE) gestureBuffer.shift();
-  const freq = {};
-  gestureBuffer.forEach(v => freq[v] = (freq[v] || 0) + 1);
-  const dominant = Object.entries(freq).sort((a,b) => b[1]-a[1])[0][0];
-
-  if (dominant !== currentGesture) {
-    currentGesture = dominant;
-    state.lastX = null; state.lastY = null;
-    updateGestureUI(dominant);
-  }
-
-  cursor.style.display = 'block';
-  cursor.style.left = x + 'px';
-  cursor.style.top = y + 'px';
-
-  if (dominant === 'erase') {
-    cursor.style.background = 'rgba(255,0,200,0.2)';
-    cursor.style.border = '2px solid #ff00c8';
-    cursor.style.boxShadow = '0 0 20px #ff00c8';
-    
-    ctx.save();
-    ctx.globalCompositeOperation = 'destination-out';
-    ctx.beginPath();
-    ctx.arc(x, y, state.brushSize * 3, 0, Math.PI * 2);
-    ctx.fillStyle = 'rgba(0,0,0,1)';
-    ctx.fill();
-    ctx.restore();
-    
-    state.lastX = null; state.lastY = null;
-  } else if (dominant === 'pause') {
-    cursor.style.background = 'rgba(255,150,0,0.1)';
-    cursor.style.border = '2px solid #ff9500';
-    cursor.style.boxShadow = '0 0 10px #ff9500';
-    state.lastX = null; state.lastY = null;
-  } else {
-    updateCursor();
-    if (dominant === 'draw') {
-      if (state.lastX !== null) {
-        drawSegment(state.lastX, state.lastY, x, y, state.color, state.brushSize, state.glowSize);
-      }
-      state.lastX = x; state.lastY = y;
-    } else {
-      state.lastX = null; state.lastY = null;
-    }
-  }
-}
-
-// ─── Engine Initialization Stack ─────────────────────────────────────────────
-const loadingBar = document.getElementById('loadingBar');
-const loadingMsg = document.getElementById('loadingMsg');
-const loadingScreen = document.getElementById('loadingScreen');
-const previewMsg = document.getElementById('previewMsg');
-
-async function initApp() {
-  const isMobileDevice = /Android|iPhone|iPad|iPod|WebOS|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
-  
-  if (isMobileDevice) {
-    loadingBar.style.width = '100%';
-    loadingMsg.textContent = 'Mobile Touch Ready!';
-    document.getElementById('debugReadout').textContent = "Mode: Touch Enabled";
-    setTimeout(() => {
-      loadingScreen.style.opacity = '0';
-      setTimeout(() => loadingScreen.style.display = 'none', 500);
-      statusDot.classList.add('active');
-      statusText.textContent = 'TOUCH READY';
-    }, 400);
-    return;
-  }
-
-  loadingMsg.textContent = 'Loading MediaPipe Tracking…';
-  loadingBar.style.width = '30%';
-
-  const hands = new Hands({ locateFile: f => `https://cdn.jsdelivr.net/npm/@mediapipe/hands/${f}` });
-  hands.setOptions({
-    maxNumHands: 1,
-    modelComplexity: 1,
-    minDetectionConfidence: 0.7,
-    minTrackingConfidence: 0.6,
-  });
-  hands.onResults(onResults);
-
-  try {
-    const stream = await navigator.mediaDevices.getUserMedia({ video: { width: 640, height: 480 }, audio: false });
-    videoEl.srcObject = stream;
-    document.getElementById('previewVideo').srcObject = stream;
-    if(previewMsg) previewMsg.style.display = 'none';
-
-    const camera = new Camera(videoEl, {
-      onFrame: async () => { if(!state.isTouchActive) await hands.send({ image: videoEl }); },
-      width: 640, height: 480,
-    });
-    await camera.start();
-
-    loadingBar.style.width = '100%';
-    setTimeout(() => {
-      loadingScreen.style.opacity = '0';
-      setTimeout(() => loadingScreen.style.display = 'none', 500);
-      statusDot.classList.add('active');
-      statusText.textContent = 'TRACKING';
-    }, 400);
-
-  } catch (err) {
-    console.warn("Camera missed, unlocking full touch fallback structure:", err);
-    loadingMsg.textContent = 'Camera blocked. Launching Touch Mode...';
-    setTimeout(() => {
-      loadingScreen.style.display = 'none';
-      statusDot.classList.add('active');
-      statusText.textContent = 'TOUCH MODE';
-    }, 1200);
-  }
-}
-
-// ─── Action Elements ─────────────────────────────────────────────────────────
+// ─── File Storage Operations Functions ────────────────────────────────────────
 function clearCanvas() {
-  ctx.clearRect(0, 0, drawCanvas.width, drawCanvas.height);
+  ctx.clearRect(0, 0, canvas.width, canvas.height);
 }
+
+document.fonts.ready.then(() => {
+  // Safe validation check inside asset engine execution stacks
+});
 
 function saveCanvas() {
-  const link = document.createElement('a');
-  const tmp = document.createElement('canvas');
-  tmp.width = drawCanvas.width; tmp.height = drawCanvas.height;
-  const tc = tmp.getContext('2d');
-  tc.fillStyle = '#000';
-  tc.fillRect(0, 0, tmp.width, tmp.height);
-  tc.drawImage(drawCanvas, 0, 0);
-  link.download = 'neon-art-' + Date.now() + '.png';
-  link.href = tmp.toDataURL();
-  link.click();
+  const triggerLink = document.createElement('a');
+  const frameBuffer = document.createElement('canvas');
+  frameBuffer.width = canvas.width; frameBuffer.height = canvas.height;
+  
+  const fCtx = frameBuffer.getContext('2d');
+  fCtx.fillStyle = '#030307'; 
+  fCtx.fillRect(0, 0, frameBuffer.width, frameBuffer.height);
+  fCtx.drawImage(canvas, 0, 0);
+  
+  triggerLink.download = 'neon-artwork-' + Date.now() + '.png';
+  triggerLink.href = frameBuffer.toDataURL();
+  triggerLink.click();
 }
-
-initApp();
 </script>
 </body>
 </html>
